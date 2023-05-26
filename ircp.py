@@ -36,7 +36,7 @@ snapshot = {
 	'raw'      : [], # All non-classified data is stored in here for analysis
 	'NOTICE'   : None,
 	'services' : False,
-	'ssl'      : True,
+	'ssl'      : False,
 
 	# server information
 	'001' : None, # RPL_WELCOME
@@ -158,6 +158,8 @@ class probe:
 			'real': settings.realname if settings.realname else rndnick()
 		}
 		self.reader, self.writer = await asyncio.wait_for(asyncio.open_connection(**options), throttle.timeout)
+		if not fallback:
+			self.snapshot['ssl'] = True
 		await self.raw('USER {0} 0 * :{1}'.format(identity['user'], identity['real']))
 		await self.raw('NICK ' + identity['nick'])
 		await self.listen()
