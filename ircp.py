@@ -215,6 +215,7 @@ class probe:
 				if self.nicks['check']:
 					nick = random.choice(self.nicks['check'])
 					self.nicks['check'].remove(nick)
+					debug(self.server + 'WHOIS ' + nick)
 					try:
 						await self.raw('WHOIS ' + nick)
 					except:
@@ -290,9 +291,12 @@ class probe:
 						await self.raw('NICK ' + rndnick())
 					else:
 						await self.raw('NICK ' + settings.nickname + str(random.randint(1000,9999)))
+				elif numeric == '465': # ERR_YOUREBANNEDCREEP
+					if 'dronebl' in line:
+						error(self.server + 'dronebl detected')
 				elif numeric == '464': # ERR_PASSWDMISMATCH
 					error(self.server + 'network has a password')
-				elif numeric == 'NOTICE':
+				elif numeric == 'NOTICE' and len(args) >= 4:
 					nick = args[0].split('!')[1:]
 					msg  = ' '.join(args[3:])[1:]
 					if nick == 'NickServ':
@@ -300,10 +304,14 @@ class probe:
 					for i in ('You must have been using this nick for','You must be connected for','not connected long enough','Please wait', 'You cannot list within the first'):
 						if i in msg:
 							error(self.server + 'delay found', msg)
-				elif numeric == 'PRIVMSG':
+				elif numeric == 'PRIVMSG' and len(args) >= 4:
 					nick = args[0].split('!')[0][1:]
+					msg  = ' '.join(args[3:])[1:]
 					if nick == 'NickServ':
 						self.snapshot['services'] = True
+					if msg[:8] == '\001VERSION':
+						version = random.choice('http://www.mibbit.com ajax IRC Client','mIRC v6.35 Khaled Mardam-Bey','xchat 0.24.1 Linux 2.6.27-8-eeepc i686','rZNC Version 1.0 [02/01/11] - Built from ZNC','thelounge v3.0.0 -- https://thelounge.chat/')
+						await self.raw(f'NOTICE {nick} \001VERSION {version}\001')
 				if numeric in self.snapshot:
 					if not self.snapshot[numeric]:
 						self.snapshot[numeric] = line
