@@ -233,7 +233,7 @@ class probe:
 			pass
 
 	async def listen(self):
-		while not self.reader.at_eof():
+		while not self.reader.at_eof(): # NOTE: should we use while True and break @ exceptions?
 			try:
 				data = await asyncio.wait_for(self.reader.readuntil(b'\r\n'), throttle.ztimeout)
 				line = data.decode('utf-8').strip()
