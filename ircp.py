@@ -44,14 +44,14 @@ snapshot = {
 	'003' : None, # RPL_CREATED
 	'004' : None, # RPL_MYINFO
 	'005' : None, # RPL_ISUPPORT
-	'372' : None, # RPL_MOTD
-	'351' : None, # RPL_VERSION
-	'364' : None, # RPL_LINKS
 	'006' : None, # RPL_MAP
 	'018' : None, # RPL_MAPUSERS
 	'257' : None, # RPL_ADMINLOC1
 	'258' : None, # RPL_ADMINLOC2
 	'259' : None, # RPL_ADMINEMAIL
+	'351' : None, # RPL_VERSION
+	'364' : None, # RPL_LINKS
+	'372' : None, # RPL_MOTD
 
 	# statistic information (lusers)
 	'250' : None, # RPL_STATSCONN
@@ -79,7 +79,7 @@ snapshot = {
 	'338' : None, # RPL_WHOISACTUALLY
 	'352' : None, # RPL_WHOREPLY
 
-	# bad numerics
+	# bad channel numerics
 	'470' : None, # ERR_LINKCHANNEL
 	'471' : None, # ERR_CHANNELISFULL
 	'473' : None, # ERR_INVITEONLYCHAN
@@ -89,10 +89,12 @@ snapshot = {
 	'489' : None, # ERR_SECUREONLYCHAN
 	'519' : None, # ERR_TOOMANYUSERS
 	'520' : None, # ERR_OPERONLY
+
+	# bad server numerics
 	'464' :	None, # ERR_PASSWDMISMATCH
 	'465' :	None, # ERR_YOUREBANNEDCREEP
 	'466' :	None, # ERR_YOUWILLBEBANNED
-	'421' : None  # ERR_UNKNOWNCOMMAND (unreal command throttling)
+	'421' : None  # ERR_UNKNOWNCOMMAND
 }
 
 def debug(data):
@@ -159,6 +161,9 @@ class probe:
 		await self.raw('USER {0} 0 * :{1}'.format(identity['user'], identity['real']))
 		await self.raw('NICK ' + identity['nick'])
 		await self.listen()
+		for item in self.loops:
+			if self.loops[item]:
+				self.loops[item].cancel()
 		for item in [rm for rm in self.snapshot if not self.snapshot[rm]]:
 			del self.snapshot[item]
 		with open(f'logs/{self.server.split()[0]}.json', 'w') as fp:
@@ -230,13 +235,22 @@ class probe:
 	def parsers(self, line):
 		args    = line.split()
 		numeric = args[1]
-		data    = args[3:][1:]
+		data    = ' '.join(args[3:])[1:]
 		if numeric == '001' and len(args) >= 7:
 			return args[6] if data.lower().startswith('welcome to the ') else line
+		elif numeric == '002':
+			return line.split('running version')[1] if 'running version' in line else line
+		elif numeric == '003':
+			check = [item for item in ('This server was cobbled together ','This server was created ','This server has been started ','This server was last re(started) on ','This server was last (re)started on ') if data.startswith(item)]
+			return data.replace(check[0],'') if check else line
+		elif numeric == '004':
+			return args[4] if len(args) >= 5 else line
+		elif numeric == '005':
+			return data.split(' :')[0]
 
 	async def listen(self):
-		try:
-			while not self.reader.at_eof():
+		while not self.reader.at_eof():
+			try:
 				data = await asyncio.wait_for(self.reader.readuntil(b'\r\n'), throttle.ztimeout)
 				line = data.decode('utf-8').strip()
 				#debug(line)
@@ -322,17 +336,14 @@ class probe:
 							self.snapshot[numeric] = [self.snapshot[numeric], line]
 				else:
 					self.snapshot['raw'].append(line)
-		except (UnicodeDecodeError, UnicodeEncodeError):
-			pass
-		except Exception as ex:
-			if '|' in self.server:
-				error(self.server + 'fatal error occured', ex)
-			else:
-				error(self.server.ljust(18) + 'fatal error occured', ex)
-		finally:
-			for item in self.loops:
-				if self.loops[item]:
-					self.loops[item].cancel()
+			except (UnicodeDecodeError, UnicodeEncodeError):
+				pass
+			except Exception as ex:
+				if '|' in self.server:
+					error(self.server + 'fatal error occured', ex)
+				else:
+					error(self.server.ljust(18) + 'fatal error occured', ex)
+				break
 
 async def main(targets):
 	sema = asyncio.BoundedSemaphore(throttle.threads) # B O U N D E D   S E M A P H O R E   G A N G
