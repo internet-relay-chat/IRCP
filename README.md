@@ -89,10 +89,8 @@ All of the raw data from a server is logged & stored. The categories below are s
 ## Todo
 * Capture `IRCOPS` & `STATS p` command outputs
 * Built in identd
-* Checking for IPv6 availability *(Need to find the server DNS, link names are not required to have DNS entries)*
+* Checking for IPv6 availability *(SSL= in 005 responses may help verify IPv6)*
 * Random nick changes for stealth on larger networks
-* Create a helper script for parsing logs & generating statistics on data
-* Parse only certain information for numerics to cut down on log sizes *(Important for scaling)*
 
 ## Mirrors
 - [acid.vegas](https://git.acid.vegas/ircp)
