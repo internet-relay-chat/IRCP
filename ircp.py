@@ -232,22 +232,6 @@ class probe:
 		except asyncio.CancelledError:
 			pass
 
-	def parsers(self, line):
-		args    = line.split()
-		numeric = args[1]
-		data    = ' '.join(args[3:])[1:]
-		if numeric == '001' and len(args) >= 7:
-			return args[6] if data.lower().startswith('welcome to the ') else line
-		elif numeric == '002':
-			return line.split('running version')[1] if 'running version' in line else line
-		elif numeric == '003':
-			check = [item for item in ('This server was cobbled together ','This server was created ','This server has been started ','This server was last re(started) on ','This server was last (re)started on ') if data.startswith(item)]
-			return data.replace(check[0],'') if check else line
-		elif numeric == '004':
-			return args[4] if len(args) >= 5 else line
-		elif numeric == '005':
-			return data.split(' :')[0]
-
 	async def listen(self):
 		while not self.reader.at_eof():
 			try:
