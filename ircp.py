@@ -256,7 +256,7 @@ class probe:
 				numeric = args[1]
 				if line.startswith('ERROR :Closing Link'):
 					raise Exception('DroneBL') if 'dronebl' in line.lower() else Exception('Banned')
-				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast'):
+				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
 					raise Exception('Throttled')
 				elif line.startswith('ERROR :Access denied'):
 					raise Exception('Access denied')
