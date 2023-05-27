@@ -50,9 +50,6 @@ if len(sys.argv) >= 2:
 				elif type(data) == list:
 					for item in data:
 						print(parse(item, raw))
-			else:
-				print(f'error: \'{check}\' is an invalid or missing field')
-				break
 	print(f'\nFound {found} results in {len(logs)} logs')
 else:
 	print('usage: python parser.py <field> [clean]\n')
