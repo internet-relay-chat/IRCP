@@ -206,6 +206,8 @@ class probe:
 				await self.raw('QUIT')
 		except asyncio.CancelledError:
 			pass
+		except Exception as ex:
+			error(self.display + 'error in loop_initial', ex)
 
 	async def loop_channels(self):
 		try:
@@ -227,6 +229,8 @@ class probe:
 			await self.raw('QUIT')
 		except asyncio.CancelledError:
 			pass
+		except Exception as ex:
+			error(self.display + 'error in loop_channels', ex)
 
 	async def loop_whois(self):
 		try:
@@ -245,10 +249,14 @@ class probe:
 					await asyncio.sleep(1)
 		except asyncio.CancelledError:
 			pass
+		except Exception as ex:
+			error(self.display + 'error in loop_whois', ex)
 
 	async def listen(self):
-		while not self.reader.at_eof(): # TODO: should we use while True and break @ exceptions?
+		while True:
 			try:
+				if self.reader.at_eof(): # TODO: can we use while self.reader.at_eof() outside of the try block?
+					break
 				data = await asyncio.wait_for(self.reader.readuntil(b'\r\n'), throttle.ztimeout)
 				line = data.decode('utf-8').strip()
 				#debug(line)
@@ -284,7 +292,7 @@ class probe:
 						self.loops['nick'] = asyncio.create_task(self.loop_whois())
 				elif numeric == '352' and len(args) >= 8: # RPL_WHORPL
 					nick = args[7]
-					if nick not in self.nicks['all'] and not in ('BOPM','ChanServ','HOPM'):
+					if nick not in self.nicks['all']+['BOPM','ChanServ','HOPM']:
 						self.nicks['all'].append(nick)
 						self.nicks['check'].append(nick)
 				elif numeric == '366' and len(args) >= 4: # RPL_ENDOFNAMES
