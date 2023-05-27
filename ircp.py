@@ -6,7 +6,6 @@ import copy
 import json
 import os
 import random
-import socket
 import ssl
 import sys
 import time
