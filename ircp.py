@@ -314,9 +314,16 @@ class probe:
 					msg  = ' '.join(args[3:])[1:]
 					if nick == 'NickServ':
 						self.snapshot['services'] = True
-					for i in ('You must have been using this nick for','You must be connected for','not connected long enough','Please wait', 'You cannot list within the first'):
-						if i in msg:
-							error(self.server + 'delay found', msg)
+					elif '!' not in args[0]:
+						for i in ('You must have been using this nick for','You must be connected for','not connected long enough','Please wait', 'You cannot list within the first'):
+							if i in msg:
+								error(self.server + 'delay found', msg)
+						if 'dronebl.org/lookup' in msg:
+							error(self.server + 'dronebl detected')
+						else:
+							for i in ('You\'re banned','You are permanently banned','You are banned','You are not welcome'):
+								if i in msg:
+									error(self.server + 'banned')
 				elif numeric == 'PRIVMSG' and len(args) >= 4:
 					nick = args[0].split('!')[0][1:]
 					msg  = ' '.join(args[3:])[1:]
