@@ -12,7 +12,7 @@ import sys
 import time
 
 class settings:
-	errors   = False # Show connection errors
+	errors   = False # Show errors in console
 	nickname = 'IRCP'
 	username = 'ircp'
 	realname = 'internetrelaychat.org'
@@ -46,7 +46,7 @@ donotscan = (
 snapshot = {
 	'server'   : None,
 	'host'     : None,
-	'raw'      : [], # All non-classified data is stored in here for analysis
+	'raw'      : [], # all other data goes in here
 	'NOTICE'   : None,
 	'services' : False,
 	'ssl'      : False,
@@ -132,10 +132,11 @@ def ssl_ctx():
 class probe:
 	def __init__(self, server, semaphore):
 		self.server    = server
+		self.display   = server.ljust(18)+' | '
 		self.semaphore = semaphore
+		self.nickname  = None
 		self.snapshot  = copy.deepcopy(snapshot) # <--- GET FUCKED PYTHON
-		self.channels  = {'all':list(), 'current':list()}
-		self.cchannels = dict()
+		self.channels  = {'all':list(), 'current':list(), 'users':dict()}
 		self.nicks     = {'all':list(),   'check':list()}
 		self.loops     = {'init':None,'chan':None,'nick':None}
 		self.reader    = None
@@ -146,11 +147,11 @@ class probe:
 			try:
 				await self.connect()
 			except Exception as ex:
-				error(self.server.ljust(18) + ' | failed to connect using SSL/TLS', ex)
+				error(self.display + 'failed to connect using SSL/TLS', ex)
 				try:
 					await self.connect(True)
 				except Exception as ex:
-					error(self.server.ljust(18) + ' | failed to connect', ex)
+					error(self.display + 'failed to connect', ex)
 
 	async def raw(self, data):
 		self.writer.write(data[:510].encode('utf-8') + b'\r\n')
@@ -170,6 +171,7 @@ class probe:
 			'user': settings.username if settings.username else rndnick(),
 			'real': settings.realname if settings.realname else rndnick()
 		}
+		self.nickname = idenity['nick']
 		self.reader, self.writer = await asyncio.wait_for(asyncio.open_connection(**options), throttle.timeout)
 		if not fallback:
 			self.snapshot['ssl'] = True
@@ -181,12 +183,9 @@ class probe:
 				self.loops[item].cancel()
 		for item in [rm for rm in self.snapshot if not self.snapshot[rm]]:
 			del self.snapshot[item]
-		with open(f'logs/{self.server.split()[0]}.json', 'w') as fp:
+		with open(f'logs/{self.server}.json', 'w') as fp:
 			json.dump(self.snapshot, fp)
-		if '|' in self.server:
-			debug(self.server + 'finished scanning')
-		else:
-			debug(self.server.ljust(18) + ' | finished scanning')
+		debug(self.display + 'finished scanning')
 
 	async def loop_initial(self):
 		try:
@@ -203,7 +202,7 @@ class probe:
 				else:
 					await asyncio.sleep(1.5)
 			if not self.channels['all']:
-				error(self.server + 'no channels found')
+				error(self.display + 'no channels found')
 				await self.raw('QUIT')
 		except asyncio.CancelledError:
 			pass
@@ -221,7 +220,7 @@ class probe:
 					break
 				else:
 					await asyncio.sleep(throttle.join)
-					del self.cchannels[chan]
+					del self.channels['users'][chan]
 			while self.nicks['check']:
 				await asyncio.sleep(1)
 			self.loops['nick'].cancel()
@@ -235,7 +234,7 @@ class probe:
 				if self.nicks['check']:
 					nick = random.choice(self.nicks['check'])
 					self.nicks['check'].remove(nick)
-					debug(self.server + 'WHOIS ' + nick)
+					debug(self.display + 'WHOIS ' + nick)
 					try:
 						await self.raw('WHOIS ' + nick)
 					except:
@@ -248,15 +247,19 @@ class probe:
 			pass
 
 	async def listen(self):
-		while not self.reader.at_eof(): # NOTE: should we use while True and break @ exceptions?
+		while not self.reader.at_eof(): # TODO: should we use while True and break @ exceptions?
 			try:
 				data = await asyncio.wait_for(self.reader.readuntil(b'\r\n'), throttle.ztimeout)
 				line = data.decode('utf-8').strip()
 				#debug(line)
 				args = line.split()
 				numeric = args[1]
-				if line.startswith('ERROR :Closing Link:'):
-					raise Exception('Connection has closed.')
+				if line.startswith('ERROR :Closing Link'):
+					raise Exception('DroneBL') if 'dronebl' in line.lower() else Exception('Banned')
+				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast'):
+					raise Exception('Throttled')
+				elif line.startswith('ERROR :Access denied'):
+					raise Exception('Access denied')
 				elif args[0] == 'PING':
 					await self.raw('PONG ' + args[1][1:])
 				elif numeric == '001': #RPL_WELCOME
@@ -264,33 +267,33 @@ class probe:
 					self.snapshot['server'] = self.server
 					self.snapshot['host']   = host
 					if len(host) > 25:
-						self.server = f'{self.server.ljust(18)} | {host[:25]} | '
+						self.display = f'{self.server.ljust(18)} | {host[:22]}... | '
 					else:
-						self.server = f'{self.server.ljust(18)} | {host.ljust(25)} | '
-					debug(self.server + 'connected')
+						self.display = f'{self.server.ljust(18)} | {host.ljust(25)} | '
+					debug(self.display + 'connected')
 					self.loops['init'] = asyncio.create_task(self.loop_initial())
 				elif numeric == '322' and len(args) >= 5: # RPL_LIST
 					chan  = args[3]
 					users = args[4]
 					self.channels['all'].append(chan)
-					self.cchannels[chan] = users
+					self.channels['users'][chan] = users
 				elif numeric == '323': # RPL_LISTEND
 					if self.channels['all']:
-						debug(self.server + 'found {0} channel(s)'.format(str(len(self.channels['all']))))
+						debug(self.display + 'found {0} channel(s)'.format(str(len(self.channels['all']))))
 						self.loops['chan'] = asyncio.create_task(self.loop_channels())
 						self.loops['nick'] = asyncio.create_task(self.loop_whois())
 				elif numeric == '352' and len(args) >= 8: # RPL_WHORPL
 					nick = args[7]
-					if nick not in self.nicks['all']:
+					if nick not in self.nicks['all'] and not in ('BOPM','ChanServ','HOPM'):
 						self.nicks['all'].append(nick)
 						self.nicks['check'].append(nick)
 				elif numeric == '366' and len(args) >= 4: # RPL_ENDOFNAMES
 					chan = args[3]
 					self.channels['current'].append(chan)
-					if chan in self.cchannels:
-						debug(self.server + f'scanning {self.cchannels[chan].ljust(4)} users in {chan}')
+					if chan in self.channels['users']:
+						debug('{0}scanning {1} users in {2}'.format(self.display, self.channels['users'][chan].ljust(4), chan))
 					else:
-						debug(self.server + f'scanning      users in {chan}')
+						debug(f'{self.display} scanning      users in {chan}')
 					await self.raw('WHO ' + chan)
 					await asyncio.sleep(throttle.part)
 					await self.raw('PART ' + chan)
@@ -298,40 +301,36 @@ class probe:
 				elif numeric == '421' and len(args) >= 3: # ERR_UNKNOWNCOMMAND
 					msg = ' '.join(args[2:])
 					if 'You must be connected for' in msg:
-						error(self.server + 'delay found', msg)
+						error(self.display + 'delay found', msg)
 				elif numeric == '433': # ERR_NICKINUSE
 					if not settings.nickname:
 						await self.raw('NICK ' + rndnick())
 					else:
 						await self.raw('NICK ' + settings.nickname + str(random.randint(1000,9999)))
 				elif numeric == '465': # ERR_YOUREBANNEDCREEP
-					if 'dronebl' in line:
-						error(self.server + 'dronebl detected')
+					raise Exception('K-Lined')
 				elif numeric == '464': # ERR_PASSWDMISMATCH
-					error(self.server + 'network has a password')
-				elif numeric == 'NOTICE' and len(args) >= 4:
-					nick = args[0].split('!')[1:]
-					msg  = ' '.join(args[3:])[1:]
-					if nick == 'NickServ':
-						self.snapshot['services'] = True
-					elif '!' not in args[0]:
+					raise Exception('Network has a password')
+				elif numeric in ('NOTICE','PRIVMSG') and len(args) >= 4:
+					nick   = args[0].split('!')[1:]
+					target = args[2]
+					msg    = ' '.join(args[3:])[1:]
+					if target == self.nickname:
 						for i in ('You must have been using this nick for','You must be connected for','not connected long enough','Please wait', 'You cannot list within the first'):
 							if i in msg:
-								error(self.server + 'delay found', msg)
-						if 'dronebl.org/lookup' in msg:
-							error(self.server + 'dronebl detected')
-						else:
-							for i in ('You\'re banned','You are permanently banned','You are banned','You are not welcome'):
-								if i in msg:
-									error(self.server + 'banned')
-				elif numeric == 'PRIVMSG' and len(args) >= 4:
-					nick = args[0].split('!')[0][1:]
-					msg  = ' '.join(args[3:])[1:]
-					if nick == 'NickServ':
-						self.snapshot['services'] = True
-					if msg[:8] == '\001VERSION':
-						version = random.choice('http://www.mibbit.com ajax IRC Client','mIRC v6.35 Khaled Mardam-Bey','xchat 0.24.1 Linux 2.6.27-8-eeepc i686','rZNC Version 1.0 [02/01/11] - Built from ZNC','thelounge v3.0.0 -- https://thelounge.chat/')
-						await self.raw(f'NOTICE {nick} \001VERSION {version}\001')
+								error(self.display + 'delay found', msg)
+								break
+						if msg[:8] == '\001VERSION':
+							version = random.choice('http://www.mibbit.com ajax IRC Client','mIRC v6.35 Khaled Mardam-Bey','xchat 0.24.1 Linux 2.6.27-8-eeepc i686','rZNC Version 1.0 [02/01/11] - Built from ZNC','thelounge v3.0.0 -- https://thelounge.chat/')
+							await self.raw(f'NOTICE {nick} \001VERSION {version}\001')
+						elif nick == 'NickServ':
+							self.snapshot['services'] = True
+						elif '!' not in args[0]:
+							if 'dronebl.org/lookup' in msg:
+								raise Exception('DroneBL')
+							else:
+								if [i for i in ('You\'re banned','You are permanently banned','You are banned','You are not welcome') if i in msg]:
+									raise Exception('K-Lined')
 				if numeric in self.snapshot:
 					if not self.snapshot[numeric]:
 						self.snapshot[numeric] = line
@@ -345,10 +344,7 @@ class probe:
 			except (UnicodeDecodeError, UnicodeEncodeError):
 				pass
 			except Exception as ex:
-				if '|' in self.server:
-					error(self.server + 'fatal error occured', ex)
-				else:
-					error(self.server.ljust(18) + 'fatal error occured', ex)
+				error(self.display + 'fatal error occured', ex)
 				break
 
 async def main(targets):
