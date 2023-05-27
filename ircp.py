@@ -30,6 +30,19 @@ class throttle:
 	whois    = 3   # Delay between WHOIS requests
 	ztimeout = 200 # Timeout for zero data from server
 
+donotscan = (
+	'irc.dronebl.org',
+	'irc.alphachat.net',
+	'5.9.164.48',
+	'45.32.74.177',
+	'149.248.55.130',
+	'104.238.146.46',
+	'2001:19f0:6001:1dc::1',
+	'2001:19f0:b001:ce3::1',
+	'2a01:4f8:160:2501:48:164:9:5',
+	'2001:19f0:6401:17c::1'
+)
+
 snapshot = {
 	'server'   : None,
 	'host'     : None,
@@ -353,7 +366,7 @@ else:
 if not os.path.isfile(targets_file):
 	raise SystemExit('error: invalid file path')
 else:
-	targets = [line.rstrip() for line in open(targets_file).readlines() if line]
+	targets = [line.rstrip() for line in open(targets_file).readlines() if line and line not in donotscan]
 	found   = len(targets)
 	debug(f'loaded {found:,} targets')
 	targets = [target for target in targets if not os.path.isfile(f'logs/{target}.json')] # Do not scan targets we already have logged for
