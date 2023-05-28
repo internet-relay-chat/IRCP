@@ -86,6 +86,9 @@ All of the raw data from a server is logged & stored. The categories below are s
 | 466     | ERR_YOUWILLBEBANNED  |
 | 421     | ERR_UNKNOWNCOMMAND   |
 
+## Preview
+![](.screens/preview.png)
+
 ## Todo
 * Capture `IRCOPS` & `STATS p` command outputs
 * Built in identd
