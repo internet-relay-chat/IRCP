@@ -269,11 +269,11 @@ class probe:
 			try:
 				if self.reader.at_eof(): # TODO: can we use while self.reader.at_eof() outside of the try block?
 					break
-				data = await asyncio.wait_for(self.reader.readuntil(b'\r\n'), throttle.ztimeout)
-				line = data.decode('utf-8').strip()
-				#debug(line)
-				args = line.split()
+				data    = await asyncio.wait_for(self.reader.readuntil(b'\r\n'), throttle.ztimeout)
+				line    = data.decode('utf-8').strip()
+				args    = line.split()
 				numeric = args[1]
+				#debug(line)
 				if line.startswith('ERROR :Closing Link'):
 					raise Exception('DroneBL') if 'dronebl' in line.lower() else Exception('Banned')
 				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
