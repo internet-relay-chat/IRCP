@@ -170,7 +170,7 @@ class probe:
 			'user': settings.username if settings.username else rndnick(),
 			'real': settings.realname if settings.realname else rndnick()
 		}
-		self.nickname = idenity['nick']
+		self.nickname = identity['nick']
 		self.reader, self.writer = await asyncio.wait_for(asyncio.open_connection(**options), throttle.timeout)
 		if not fallback:
 			self.snapshot['ssl'] = True
