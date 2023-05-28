@@ -300,7 +300,7 @@ class probe:
 					if chan in self.channels['users']:
 						debug('{0}scanning {1} users in {2}'.format(self.display, self.channels['users'][chan].ljust(4), chan))
 					else:
-						debug(f'{self.display} scanning      users in {chan}')
+						debug(f'{self.display}scanning      users in {chan}')
 					await self.raw('WHO ' + chan)
 					await asyncio.sleep(throttle.part)
 					await self.raw('PART ' + chan)
