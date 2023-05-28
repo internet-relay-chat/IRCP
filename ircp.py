@@ -192,7 +192,7 @@ class probe:
 			await asyncio.sleep(throttle.delay)
 			login = {
 				'pass': settings.ns_pass if settings.ns_pass else rndnick(),
-				'mail': settings.ns_mail if settings.ns_mail else '{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))
+				'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))
 			}
 			for command in ('ADMIN', 'VERSION', 'LINKS', 'MAP', 'PRIVMSG NickServ :REGISTER {0} {1}'.format(login['pass'], login['mail']), 'LIST'):
 				try:
