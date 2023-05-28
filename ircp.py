@@ -11,13 +11,13 @@ import sys
 import time
 
 class settings:
-	errors   = False # Show errors in console
-	nickname = 'IRCP'
-	username = 'ircp'
-	realname = 'internetrelaychat.org'
-	ns_mail  = 'ircp@internetrelaychat.org'
-	ns_pass  = 'changeme'
-	vhost    = None # Bind to a specific IP address
+	errors   = False                        # Show errors in console
+	nickname = 'IRCP'                       # None = random
+	username = 'ircp'                       # None = random
+	realname = 'internetrelaychat.org'      # None = random
+	ns_mail  = 'scan@internetrelaychat.org' # None = random@random.[com|net|org]
+	ns_pass  = 'changeme'                   # None = random
+	vhost    = None                         # Bind to a specific IP address
 
 class throttle:
 	channels = 3   # Maximum number of channels to scan at once
