@@ -274,6 +274,14 @@ class probe:
 				args    = line.split()
 				numeric = args[1]
 				#debug(line)
+				if numeric in self.snapshot:
+					if not self.snapshot[numeric]:
+						self.snapshot[numeric] = line
+					elif line not in self.snapshot[numeric]:
+						if type(self.snapshot[numeric]) == list:
+							self.snapshot[numeric].append(line)
+						elif type(self.snapshot[numeric]) == str:
+							self.snapshot[numeric] = [self.snapshot[numeric], line]
 				if line.startswith('ERROR :Closing Link'):
 					raise Exception('DroneBL') if 'dronebl' in line.lower() else Exception('Banned')
 				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
@@ -352,14 +360,6 @@ class probe:
 							else:
 								if [i for i in ('You\'re banned','You are permanently banned','You are banned','You are not welcome') if i in msg]:
 									raise Exception('K-Lined')
-				if numeric in self.snapshot:
-					if not self.snapshot[numeric]:
-						self.snapshot[numeric] = line
-					elif line not in self.snapshot[numeric]:
-						if type(self.snapshot[numeric]) == list:
-							self.snapshot[numeric].append(line)
-						elif type(self.snapshot[numeric]) == str:
-							self.snapshot[numeric] = [self.snapshot[numeric], line]
 				else:
 					self.snapshot['raw'].append(line)
 			except (UnicodeDecodeError, UnicodeEncodeError):
