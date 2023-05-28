@@ -19,6 +19,9 @@ Next, every channel is joined with a `WHO` command sent & every new nick found g
 
 Everything is done in a heavily throttled manner for stealth to avoid detection.
 
+## Opt-out
+The IRC networks we scanned are PUBLIC networks...any person can freely connect & parse the same information. Send your hate mail to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)
+
 ## Collected Information
 All of the raw data from a server is logged & stored. The categories below are stored seperately & hilight the key information we are after:
 
