@@ -328,7 +328,7 @@ class probe:
 								error(self.display + 'delay found', msg)
 								break
 						if msg[:8] == '\001VERSION':
-							version = random.choice('http://www.mibbit.com ajax IRC Client','mIRC v6.35 Khaled Mardam-Bey','xchat 0.24.1 Linux 2.6.27-8-eeepc i686','rZNC Version 1.0 [02/01/11] - Built from ZNC','thelounge v3.0.0 -- https://thelounge.chat/')
+							version = random.choice(('http://www.mibbit.com ajax IRC Client','mIRC v6.35 Khaled Mardam-Bey','xchat 0.24.1 Linux 2.6.27-8-eeepc i686','rZNC Version 1.0 [02/01/11] - Built from ZNC','thelounge v3.0.0 -- https://thelounge.chat/'))
 							await self.raw(f'NOTICE {nick} \001VERSION {version}\001')
 						elif nick == 'NickServ':
 							self.snapshot['services'] = True
