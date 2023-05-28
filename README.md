@@ -17,6 +17,8 @@ An attempt to register a nickname is then made by trying to contact NickServ.
 
 Next, every channel is joined with a `WHO` command sent & every new nick found gets a `WHOIS`.
 
+Everything is done in a heavily throttled manner for stealth to avoid detection.
+
 ## Collected Information
 All of the raw data from a server is logged & stored. The categories below are stored seperately & hilight the key information we are after:
 
