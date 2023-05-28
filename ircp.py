@@ -22,8 +22,9 @@ class settings:
 class throttle:
 	channels = 3   # Maximum number of channels to scan at once
 	delay    = 120 # Delay before registering nick (if enabled) & sending /LIST
-	join     = 10  # Delay between channel joins
-	part     = 3   # Delay before leaving a channel
+	join     = 10  # Delay between channel JOINs
+	nick     = 300 # Delay between every random NICK change
+	part     = 3   # Delay before PARTing a channel
 	threads  = 100 # Maximum number of threads running
 	timeout  = 15  # Timeout for all sockets
 	whois    = 3   # Delay between WHOIS requests
@@ -137,7 +138,7 @@ class probe:
 		self.snapshot  = copy.deepcopy(snapshot) # <--- GET FUCKED PYTHON
 		self.channels  = {'all':list(), 'current':list(), 'users':dict()}
 		self.nicks     = {'all':list(),   'check':list()}
-		self.loops     = {'init':None,'chan':None,'nick':None}
+		self.loops     = {'init':None,'chan':None,'nick':None,'whois':None}
 		self.reader    = None
 		self.writer    = None
 
@@ -222,14 +223,26 @@ class probe:
 				else:
 					await asyncio.sleep(throttle.join)
 					del self.channels['users'][chan]
+			self.loops['nick'].cancel()
 			while self.nicks['check']:
 				await asyncio.sleep(1)
-			self.loops['nick'].cancel()
+			self.loops['whois'].cancel()
 			await self.raw('QUIT')
 		except asyncio.CancelledError:
 			pass
 		except Exception as ex:
 			error(self.display + 'error in loop_channels', ex)
+
+	async def loop_nick(self):
+		try:
+			while True:
+				await asyncio.sleep(throttle.nick)
+				await self.raw('NICK ' + self.nickname)
+				self.nickname = rndnick()
+		except asyncio.CancelledError:
+			pass
+		except Exception as ex:
+			error(self.display + 'error in loop_nick', ex)
 
 	async def loop_whois(self):
 		try:
@@ -287,8 +300,9 @@ class probe:
 				elif numeric == '323': # RPL_LISTEND
 					if self.channels['all']:
 						debug(self.display + 'found {0} channel(s)'.format(str(len(self.channels['all']))))
-						self.loops['chan'] = asyncio.create_task(self.loop_channels())
-						self.loops['nick'] = asyncio.create_task(self.loop_whois())
+						self.loops['chan']  = asyncio.create_task(self.loop_channels())
+						self.loops['nick']  = asyncio.create_task(self.loop_nick())
+						self.loops['whois'] = asyncio.create_task(self.loop_whois())
 				elif numeric == '352' and len(args) >= 8: # RPL_WHORPL
 					nick = args[7]
 					if nick not in self.nicks['all']+['BOPM','ChanServ','HOPM']:

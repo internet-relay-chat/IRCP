@@ -95,7 +95,6 @@ All of the raw data from a server is logged & stored. The categories below are s
 * Capture `IRCOPS` & `STATS p` command outputs
 * Built in identd
 * Checking for IPv6 availability *(SSL= in 005 responses may help verify IPv6)*
-* Random nick changes for stealth on larger networks
 * Support for IRC servers using old versions of SSL
 
 ## Mirrors
