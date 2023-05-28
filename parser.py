@@ -30,27 +30,42 @@ def parse(line, raw): # TODO: finish adding custom outputs for certain fields
 			return data.split()[0]
 	return line if raw else data
 
+def stats(lines):
+
+
 # Main
 if len(sys.argv) >= 2:
 	check  = sys.argv[1]
 	raw    = True
+	stats  = False
 	if len(sys.argv) == 3:
 		if sys.argv[2] == 'clean':
 			raw = False
+		elif sys.argv == 'stats':
+			stats = True
 	logs  = os.listdir('logs')
-	found = 0
+	found = list()
 	for log in logs:
 		with open('logs/'+log) as logfile:
 			data = json.loads(logfile.read())
 			if check in data:
-				found += 1
 				data = data[check]
 				if type(data) == str:
 					print(parse(data, raw))
+					found.append(parse(data, raw))
 				elif type(data) == list:
 					for item in data:
 						print(parse(item, raw))
-	print(f'\nFound {found} results in {len(logs)} logs')
+						found.append(parse(item, raw))
+	if stats:
+		database = dict()
+		for item in found:
+			if item not in database:
+				database[item] = 1
+			else:
+				database[item] +=1
+	print(database)
+	print(f'\nFound {len(found)} results in {len(logs)} logs')
 else:
 	print('usage: python parser.py <field> [clean]\n')
 	print('       <field> may be any item in the snapshots (001, NOTICE, 464, etc)')
