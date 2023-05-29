@@ -11,23 +11,24 @@ import sys
 import time
 
 class settings:
-	errors   = False                        # Show errors in console
+	errors   = True                         # Show errors in console
 	nickname = 'IRCP'                       # None = random
 	username = 'ircp'                       # None = random
-	realname = 'internetrelaychat.org'      # None = random
+	realname = 'scan@internetrelaychat.org' # None = random
 	ns_mail  = 'scan@internetrelaychat.org' # None = random@random.[com|net|org]
 	ns_pass  = 'changeme'                   # None = random
 	vhost    = None                         # Bind to a specific IP address
 
 class throttle:
 	channels = 3   # Maximum number of channels to scan at once
-	delay    = 120 # Delay before registering nick (if enabled) & sending /LIST
+	delay    = 300 # Delay before registering nick (if enabled) & sending /LIST
 	join     = 10  # Delay between channel JOINs
 	nick     = 300 # Delay between every random NICK change
-	part     = 3   # Delay before PARTing a channel
+	part     = 10  # Delay before PARTing a channel
+	seconds  = 300 # Maximum seconds to wait when throttled for JOIN
 	threads  = 100 # Maximum number of threads running
-	timeout  = 15  # Timeout for all sockets
-	whois    = 3   # Delay between WHOIS requests
+	timeout  = 30  # Timeout for all sockets
+	whois    = 5   # Delay between WHOIS requests
 	ztimeout = 200 # Timeout for zero data from server
 
 donotscan = (
@@ -93,6 +94,7 @@ snapshot = {
 	'352' : None, # RPL_WHOREPLY
 
 	# bad channel numerics
+	'439' : None, # ERR_TARGETTOOFAST
 	'470' : None, # ERR_LINKCHANNEL
 	'471' : None, # ERR_CHANNELISFULL
 	'473' : None, # ERR_INVITEONLYCHAN
@@ -139,8 +141,9 @@ class probe:
 		self.channels  = {'all':list(), 'current':list(), 'users':dict()}
 		self.nicks     = {'all':list(),   'check':list()}
 		self.loops     = {'init':None,'chan':None,'nick':None,'whois':None}
+		self.jthrottle = throttle.join
 		self.reader    = None
-		self.writer    = None
+		self.write     = None
 
 	async def run(self):
 		async with self.semaphore:
@@ -215,14 +218,12 @@ class probe:
 				while len(self.channels['current']) >= throttle.channels:
 					await asyncio.sleep(1)
 				chan = random.choice(self.channels['all'])
+				await asyncio.sleep(self.jthrottle)
 				self.channels['all'].remove(chan)
 				try:
 					await self.raw('JOIN ' + chan)
 				except:
 					break
-				else:
-					await asyncio.sleep(throttle.join)
-					del self.channels['users'][chan]
 			self.loops['nick'].cancel()
 			while self.nicks['check']:
 				await asyncio.sleep(1)
@@ -284,7 +285,12 @@ class probe:
 							self.snapshot[numeric] = [self.snapshot[numeric], line]
 				else:
 					self.snapshot['raw'].append(line)
-				if line.startswith('ERROR :Closing Link'):
+				if numeric in ('470','471','473','747','475','477','489','519','520'):
+					chan = args[3]
+					if chan in self.channels['users']:
+						del self.channels['users'][chan]
+					error(f'{self.display}scanning {chan} failed', line)
+				elif line.startswith('ERROR :Closing Link'):
 					raise Exception('DroneBL') if 'dronebl' in line.lower() else Exception('Banned')
 				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
 					raise Exception('Throttled')
@@ -338,6 +344,16 @@ class probe:
 						await self.raw('NICK ' + rndnick())
 					else:
 						await self.raw('NICK ' + settings.nickname + str(random.randint(1000,9999)))
+				elif numeric == '439' and len(args) >= 5: # ERR_TARGETTOOFAST
+					chan = args[3]
+					msg  = ' '.join(args[4:])[1:]
+					self.channels['all'].append(chan)
+					if 'Target change too fast' in msg and len(args) >= 11:
+						seconds = args[10]
+						if seconds.isdigit():
+							seconds = int(seconds)
+							self.jthrottle = throttle.seconds if seconds > throttle.seconds else seconds
+					error(self.display + 'delay found', msg)
 				elif numeric == '465': # ERR_YOUREBANNEDCREEP
 					raise Exception('K-Lined')
 				elif numeric == '464': # ERR_PASSWDMISMATCH

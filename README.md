@@ -38,13 +38,14 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 | Setting    | Default Value | Description                                                   |
 | ---------- | ------------- | ------------------------------------------------------------- |
 | `channels` | `3`           | Maximum number of channels to scan at once                    |
-| `delay`    | `120`         | Delay before registering nick *(if enabled)* & sending `LIST` |
+| `delay`    | `300`         | Delay before registering nick *(if enabled)* & sending `LIST` |
 | `join`     | `10`          | Delay between channel `JOIN`                                  |
 | `nick`     | `300`         | Delay between every random `NICK` change                      |
-| `part`     | `3`           | Delay before `PART` from channel                              |
+| `part`     | `10`          | Delay before `PART` from channel                              |
+| `seconds`  | `300`         | Maximum seconds to wait when throttled for `JOIN`             |
 | `threads`  | `100`         | Maximum number of threads running                             |
-| `timeout`  | `15`          | Timeout for all sockets                                       |
-| `whois`    | `3`           | Delay between `WHOIS` requests                                |
+| `timeout`  | `30`          | Timeout for all sockets                                       |
+| `whois`    | `5`           | Delay between `WHOIS` requests                                |
 | `ztimeout` | `200`         | Timeout for zero data from server                             |
 
 ## Collected Information

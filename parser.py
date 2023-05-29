@@ -30,9 +30,6 @@ def parse(line, raw): # TODO: finish adding custom outputs for certain fields
 			return data.split()[0]
 	return line if raw else data
 
-def stats(lines):
-
-
 # Main
 if len(sys.argv) >= 2:
 	check  = sys.argv[1]
