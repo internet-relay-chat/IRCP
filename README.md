@@ -35,17 +35,17 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 | `vhost`    | `None`                         | Bind to a specific IP address              |
 
 ###### Throttle
-| Setting    | Default Value | Description                                                 |
-| ---------- | ------------- | ----------------------------------------------------------- |
-| `channels` | `3`           | Maximum number of channels to scan at once                  |
-| `delay`    | `120`         | Delay before registering nick (if enabled) & sending `LIST` |
-| `join`     | `10`          | Delay between channel `JOIN`                                |
-| `nick`     | `300`         | Delay between every random `NICK` change                    |
-| `part`     | `3`           | Delay before `PART` from channel                            |
-| `threads`  | `100`         | Maximum number of threads running                           |
-| `timeout`  | `15`          | Timeout for all sockets                                     |
-| `whois`    | `3`           | Delay between `WHOIS` requests                              |
-| `ztimeout` | `200`         | Timeout for zero data from server                           |
+| Setting    | Default Value | Description                                                   |
+| ---------- | ------------- | ------------------------------------------------------------- |
+| `channels` | `3`           | Maximum number of channels to scan at once                    |
+| `delay`    | `120`         | Delay before registering nick *(if enabled)( & sending `LIST` |
+| `join`     | `10`          | Delay between channel `JOIN`                                  |
+| `nick`     | `300`         | Delay between every random `NICK` change                      |
+| `part`     | `3`           | Delay before `PART` from channel                              |
+| `threads`  | `100`         | Maximum number of threads running                             |
+| `timeout`  | `15`          | Timeout for all sockets                                       |
+| `whois`    | `3`           | Delay between `WHOIS` requests                                |
+| `ztimeout` | `200`         | Timeout for zero data from server                             |
 
 ## Collected Information
 All of the raw data from a server is logged & stored. The categories below are stored seperately & hilight the key information we are after:
