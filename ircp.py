@@ -237,8 +237,8 @@ class probe:
 		try:
 			while True:
 				await asyncio.sleep(throttle.nick)
-				await self.raw('NICK ' + self.nickname)
 				self.nickname = rndnick()
+				await self.raw('NICK ' + self.nickname)
 		except asyncio.CancelledError:
 			pass
 		except Exception as ex:
