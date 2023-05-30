@@ -436,7 +436,7 @@ class probe:
 						elif '!' not in args[0]:
 							if 'dronebl.org/lookup' in msg:
 								self.snapshot['proxy'] = True
-								error(self.display + '\033[93mDroneBL detected\033[30m')
+								error(self.display + '\033[93mDroneBL detected\033[0m')
 								raise Exception('DroneBL')
 							else:
 								if [i for i in ('You\'re banned','You are permanently banned','You are banned','You are not welcome') if i in msg]:
