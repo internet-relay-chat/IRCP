@@ -135,6 +135,8 @@ All of the raw data from a server is logged & stored. The categories below are s
 * Support for IRC servers using old versions of SSL
 * Create a seperate log for failed connections *(Sync to file every hour maybe)*
 * Colored output option
+* Added daemon mode *(24/7 scanning heavily throttled in this mode)*
+* Add overlapping logs option *(Do not skip networks we already have logs for,just update them with new changes)*
 
 ## Mirrors
 - [acid.vegas](https://git.acid.vegas/ircp)
