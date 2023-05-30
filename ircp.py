@@ -11,10 +11,10 @@ import sys
 import time
 
 class settings:
-	#daemon      = False                        # Run IRCP in daemon mode (24/7 throttled scanning)
+	#daemon     = False                        # Run IRCP in daemon mode (24/7 throttled scanning)
 	errors      = True                         # Show errors in console
 	errors_conn = False                        # Show connection errors in console
-	#log_overlap = False                        # Do not skip networks we have logs for, just update them
+	#log_overlap = False                       # Do not skip networks we have logs for, just update them
 	log_max     = 5000000                      # Maximum log size (in bytes) before starting another
 	nickname    = 'IRCP'                       # None = random
 	username    = 'ircp'                       # None = random
@@ -53,9 +53,10 @@ snapshot = {
 	'host'     : None,
 	'services' : False,
 	'ssl'      : False,
+	#'proxy'    : False,
 	'raw'      : [], # all other data goes in here
 	'CAP'      : None,
-	'KILL',    : None, # TODO: currently does not verify it was us being killed
+	'KILL'     : None, # TODO: currently does not verify it was us being killed
 	'NOTICE'   : None,
 
 	# server information
@@ -123,11 +124,11 @@ snapshot = {
 }
 
 def debug(data):
-	print('{0} | [~] - {1}'.format(time.strftime('%I:%M:%S'), data))
+	print('{0} \033[30m|\033[0m [\033[35m~\033[0m] {1}'.format(time.strftime('%I:%M:%S'), data))
 
 def error(data, reason=None):
 	if settings.errors:
-		print('{0} | [!] - {1} ({2})'.format(time.strftime('%I:%M:%S'), data, str(reason))) if reason else print('{0} | [!] - {1}'.format(time.strftime('%I:%M:%S'), data))
+		print('{0} \033[30m|\033[0m [\033[31m!\033[0m] {1} \033[30m({2})\033[0m'.format(time.strftime('%I:%M:%S'), data, str(reason))) if reason else print('{0} \033[30m|\033[0m [\033[31m!\033[0m] - {1}'.format(time.strftime('%I:%M:%S'), data))
 
 def rndnick():
 	prefix = random.choice(['st','sn','cr','pl','pr','fr','fl','qu','br','gr','sh','sk','tr','kl','wr','bl']+list('bcdfgklmnprstvwz'))
@@ -144,14 +145,14 @@ def ssl_ctx():
 class probe:
 	def __init__(self, server, semaphore):
 		self.server    = server
-		self.display   = server.ljust(18)+' | '
+		self.display   = server.ljust(18)+'\033[30m|\033[0m'
 		self.semaphore = semaphore
 		self.nickname  = None
 		self.snapshot  = {'raw':list()}
 		self.multi     = ''
 		self.channels  = {'all':list(), 'current':list(), 'users':dict()}
-		self.nicks     = {'all':list(),   'check':list()}
-		self.loops     = {'init':None,'chan':None,'nick':None,'whois':None}
+		self.nicks     = {'all':list(), 'check':list()}
+		self.loops     = {'init':None, 'chan':None, 'nick':None, 'whois':None}
 		self.jthrottle = throttle.join
 		self.reader    = None
 		self.write     = None
@@ -162,12 +163,12 @@ class probe:
 				await self.connect()
 			except Exception as ex:
 				if settings.errors_conn:
-					error(self.display + 'failed to connect using SSL/TLS', ex)
+					error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect using SSL/TLS', ex)
 				try:
 					await self.connect(True)
 				except Exception as ex:
 					if settings.errors_conn:
-						error(self.display + 'failed to connect', ex)
+						error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect', ex)
 
 	async def raw(self, data):
 		self.writer.write(data[:510].encode('utf-8') + b'\r\n')
@@ -210,9 +211,9 @@ class probe:
 				'pass': settings.ns_pass if settings.ns_pass else rndnick(),
 				'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))
 			}
-			cmds = ('ADMIN', 'CAP LS', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'STATS p', 'VERSION')
+			cmds = ['ADMIN', 'CAP LS', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'STATS p', 'VERSION']
 			random.shuffle(cmds)
-			cmds += ('PRIVMSG NickServ :REGISTER {0} {1}'.format(login['pass'], login['mail']), 'LIST')
+			cmds += ['PRIVMSG NickServ :REGISTER {0} {1}'.format(login['pass'], login['mail']), 'LIST']
 			for command in cmds:
 				try:
 					await self.raw(command)
@@ -222,12 +223,12 @@ class probe:
 					await asyncio.sleep(1.5)
 			del login
 			if not self.channels['all']:
-				error(self.display + 'no channels found')
+				error(self.display + '\033[31merror\033[0m - no channels found')
 				await self.raw('QUIT')
 		except asyncio.CancelledError:
 			pass
 		except Exception as ex:
-			error(self.display + 'error in loop_initial', ex)
+			error(self.display + '\033[31merror\033[0m - loop_initial', ex)
 
 	async def loop_channels(self):
 		try:
@@ -250,7 +251,7 @@ class probe:
 		except asyncio.CancelledError:
 			pass
 		except Exception as ex:
-			error(self.display + 'error in loop_channels', ex)
+			error(self.display + '\033[31merror\033[0m - loop_channels', ex)
 
 	async def loop_nick(self):
 		try:
@@ -261,7 +262,7 @@ class probe:
 		except asyncio.CancelledError:
 			pass
 		except Exception as ex:
-			error(self.display + 'error in loop_nick', ex)
+			error(self.display + '\033[31merror\033[0m - loop_nick', ex)
 
 	async def loop_whois(self):
 		try:
@@ -269,7 +270,6 @@ class probe:
 				if self.nicks['check']:
 					nick = random.choice(self.nicks['check'])
 					self.nicks['check'].remove(nick)
-					debug(self.display + 'WHOIS ' + nick)
 					try:
 						await self.raw('WHOIS ' + nick)
 					except:
@@ -282,7 +282,7 @@ class probe:
 		except asyncio.CancelledError:
 			pass
 		except Exception as ex:
-			error(self.display + 'error in loop_whois', ex)
+			error(self.display + '\033[31merror\033[0m - loop_whois', ex)
 
 	async def listen(self):
 		while True:
@@ -313,7 +313,7 @@ class probe:
 					chan = args[3]
 					if chan in self.channels['users']:
 						del self.channels['users'][chan]
-					error(f'{self.display}scanning {chan} failed', line)
+					error(f'{self.display}\033[31merror\033[0m - {chan}', line)
 				elif line.startswith('ERROR :Closing Link'):
 					raise Exception('DroneBL') if 'dronebl' in line.lower() else Exception('Banned')
 				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
@@ -327,11 +327,14 @@ class probe:
 					self.snapshot['server'] = self.server
 					self.snapshot['host']   = host
 					if len(host) > 25:
-						self.display = f'{self.server.ljust(18)} | {host[:22]}... | '
+						self.display = f'{self.server.ljust(18)} \033[30m|\033[0m {host[:22]}... \033[30m|\033[0m '
 					else:
-						self.display = f'{self.server.ljust(18)} | {host.ljust(25)} | '
-					debug(self.display + 'connected')
+						self.display = f'{self.server.ljust(18)} \033[30m|\033[0m {host.ljust(25)} \033[30m|\033[0m '
+					debug(self.display + '\033[1;32mconnected\033[0m')
 					self.loops['init'] = asyncio.create_task(self.loop_initial())
+				elif numeric == '311' and len(args) >= 4: # RPL_WHOISUSER
+					nick = args[3]
+					debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
 				elif numeric == '322' and len(args) >= 4: # RPL_LIST
 					chan  = args[3]
 					self.channels['all'].append(chan)
@@ -341,7 +344,7 @@ class probe:
 				elif numeric == '323': # RPL_LISTEND
 					if self.channels['all']:
 						del self.loops['init']
-						debug(self.display + 'found {0} channel(s)'.format(str(len(self.channels['all']))))
+						debug(self.display + 'found \033[93m{0}\033[0m channel(s)'.format(str(len(self.channels['all']))))
 						self.loops['chan']  = asyncio.create_task(self.loop_channels())
 						self.loops['nick']  = asyncio.create_task(self.loop_nick())
 						self.loops['whois'] = asyncio.create_task(self.loop_whois())
@@ -354,10 +357,10 @@ class probe:
 					chan = args[3]
 					self.channels['current'].append(chan)
 					if chan in self.channels['users']:
-						debug('{0}scanning {1} users in {2}'.format(self.display, self.channels['users'][chan].ljust(4), chan))
+						debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[30m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
 						del self.channels['users'][chan]
 					else:
-						debug(f'{self.display}scanning      users in {chan}')
+						debug(f'{self.display}\033[32mJOIN\033[0m {chan}')
 					await self.raw('WHO ' + chan)
 					await asyncio.sleep(throttle.part)
 					await self.raw('PART ' + chan)
@@ -365,7 +368,7 @@ class probe:
 				elif numeric == '421' and len(args) >= 3: # ERR_UNKNOWNCOMMAND
 					msg = ' '.join(args[2:])
 					if 'You must be connected for' in msg:
-						error(self.display + 'delay found', msg)
+						error(self.display + '\033[31merror\033[0m - delay found', msg)
 				elif numeric == '433': # ERR_NICKINUSE
 					if not settings.nickname:
 						await self.raw('NICK ' + rndnick())
@@ -380,11 +383,18 @@ class probe:
 						if seconds.isdigit():
 							seconds = int(seconds)
 							self.jthrottle = throttle.seconds if seconds > throttle.seconds else seconds
-					error(self.display + 'delay found', msg)
+					error(self.display + '\033[31merror\033[0m - delay found', msg)
 				elif numeric == '465': # ERR_YOUREBANNEDCREEP
 					raise Exception('K-Lined')
 				elif numeric == '464': # ERR_PASSWDMISMATCH
 					raise Exception('Network has a password')
+				elif numeric == 'KILL':
+					nick = args[2]
+					if nick == self.nickname:
+						raise Exception('KILL')
+					else:
+						if 'KILL' in self.snapshot:
+							del self.snapshot['KILL']
 				elif numeric in ('NOTICE','PRIVMSG') and len(args) >= 4:
 					nick   = args[0].split('!')[1:]
 					target = args[2]
@@ -392,7 +402,7 @@ class probe:
 					if target == self.nickname:
 						for i in ('You must have been using this nick for','You must be connected for','not connected long enough','Please wait', 'You cannot list within the first'):
 							if i in msg:
-								error(self.display + 'delay found', msg)
+								error(self.display + '\033[31merror\033[0m - delay found', msg)
 								break
 						if msg[:8] == '\001VERSION':
 							version = random.choice(('http://www.mibbit.com ajax IRC Client','mIRC v6.35 Khaled Mardam-Bey','xchat 0.24.1 Linux 2.6.27-8-eeepc i686','rZNC Version 1.0 [02/01/11] - Built from ZNC','thelounge v3.0.0 -- https://thelounge.chat/'))
@@ -408,7 +418,7 @@ class probe:
 			except (UnicodeDecodeError, UnicodeEncodeError):
 				pass
 			except Exception as ex:
-				error(self.display + 'fatal error occured', ex)
+				error(self.display + '\033[1;31mdisconnected\033[0m', ex)
 				break
 
 async def main(targets):
