@@ -7,7 +7,7 @@ import sys
 
 def parse(option, data, raw=True):
 	if not raw:
-		data = ' '.join(line.split()[3:])
+		data = ' '.join(data.split()[3:])
 		if data[:1] == ':':
 			data = data[1:]
 	if type(data) == bool:
