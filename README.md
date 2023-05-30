@@ -140,6 +140,7 @@ All of the raw data from a server is logged & stored. The categories below are s
 * Added daemon mode *(24/7 scanning heavily throttled in this mode)*
 * Add overlapping logs option *(Do not skip networks we already have logs for,just update them with new changes)*
 * Add snapshot boolean for rbl/proxy detection/scanning
+* Ability to link multiple IRCP instances running in daemon mode together for balancing
 
 ## Mirrors
 - [acid.vegas](https://git.acid.vegas/ircp)
