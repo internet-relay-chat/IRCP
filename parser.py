@@ -36,8 +36,6 @@ if len(sys.argv) >= 2:
 				elif type(data) == list:
 					for item in data:
 						found.append(option, parse(item, raw))
-				elif type(data) == bool:
-					found.append(parse(option, str(item), raw))
 			else:
 				for item in data:
 					_data = data[item]
@@ -47,8 +45,6 @@ if len(sys.argv) >= 2:
 						for _item in _data:
 							if option in _item:
 								found.append(parse(option, _item, raw))
-					elif type(_data) == bool:
-						found.append(parse(option, str(_item), raw))
 	if found:
 		print(f'\nfound {len(found)} results in {len(logs)} logs')
 else:
