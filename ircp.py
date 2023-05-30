@@ -131,7 +131,7 @@ def debug(data):
 
 def error(data, reason=None):
 	if settings.errors:
-		print('{0} \033[30m|\033[0m [\033[31m!\033[0m] {1} \033[30m({2})\033[0m'.format(time.strftime('%I:%M:%S'), data, str(reason))) if reason else print('{0} \033[30m|\033[0m [\033[31m!\033[0m] - {1}'.format(time.strftime('%I:%M:%S'), data))
+		print('{0} \033[30m|\033[0m [\033[31m!\033[0m] {1} \033[30m({2})\033[0m'.format(time.strftime('%I:%M:%S'), data, str(reason))) if reason else print('{0} \033[30m|\033[0m [\033[31m!\033[0m] {1}'.format(time.strftime('%I:%M:%S'), data))
 
 def rndnick():
 	prefix = random.choice(['st','sn','cr','pl','pr','fr','fl','qu','br','gr','sh','sk','tr','kl','wr','bl']+list('bcdfgklmnprstvwz'))
