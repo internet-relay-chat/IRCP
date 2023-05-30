@@ -10,6 +10,8 @@ def parse(option, data, raw=True):
 		data = ' '.join(line.split()[3:])
 		if data[:1] == ':':
 			data = data[1:]
+	if type(data) == bool:
+		data = str(data)
 	print(data.replace(option, f'\033[31m{option}\033[0m'))
 	return data
 
@@ -35,7 +37,7 @@ if len(sys.argv) >= 2:
 					found.append(parse(option, data, raw))
 				elif type(data) == list:
 					for item in data:
-						found.append(option, parse(item, raw))
+						found.append(parse(option, item, raw))
 			else:
 				for item in data:
 					_data = data[item]
