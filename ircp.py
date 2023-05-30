@@ -113,6 +113,7 @@ snapshot = {
 	'520' : None, # ERR_OPERONLY
 
 	# bad server numerics
+	'451' : None, # ERR_NOTREGISTERED (TODO: Do we need to raise an exception for this numeric?
 	'464' : None, # ERR_PASSWDMISMATCH
 	'465' : None, # ERR_YOUREBANNEDCREEP
 	'466' : None, # ERR_YOUWILLBEBANNED
