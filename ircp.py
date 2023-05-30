@@ -55,6 +55,7 @@ snapshot = {
 	'ssl'      : False,
 	'raw'      : [], # all other data goes in here
 	'CAP'      : None,
+	'KILL',    : None, # TODO: currently does not verify it was us being killed
 	'NOTICE'   : None,
 
 	# server information
@@ -102,6 +103,7 @@ snapshot = {
 
 	# bad channel numerics
 	'439' : None, # ERR_TARGETTOOFAST
+	'405' : None, # ERR_TOOMANYCHANNELS (TODO: Maybe reference MAXCHANNELS= in 005 responses)
 	'470' : None, # ERR_LINKCHANNEL
 	'471' : None, # ERR_CHANNELISFULL
 	'473' : None, # ERR_INVITEONLYCHAN
