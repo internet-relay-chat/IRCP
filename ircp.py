@@ -11,10 +11,9 @@ import sys
 import time
 
 class settings:
-	#daemon     = False                        # Run IRCP in daemon mode (24/7 throttled scanning)
+	daemon      = False                        # Run in daemon mode (24/7 throttled scanning)
 	errors      = True                         # Show errors in console
 	errors_conn = False                        # Show connection errors in console
-	#log_overlap = False                       # Do not skip networks we have logs for, just update them
 	log_max     = 5000000                      # Maximum log size (in bytes) before starting another
 	nickname    = 'IRCP'                       # None = random
 	username    = 'ircp'                       # None = random
@@ -24,28 +23,21 @@ class settings:
 	vhost       = None                         # Bind to a specific IP address
 
 class throttle:
-	channels = 3   # Maximum number of channels to scan at once
-	delay    = 300 # Delay before registering nick (if enabled) & sending /LIST
-	join     = 10  # Delay between channel JOINs
-	nick     = 300 # Delay between every random NICK change
-	part     = 10  # Delay before PARTing a channel
-	seconds  = 300 # Maximum seconds to wait when throttled for JOIN
-	threads  = 100 # Maximum number of threads running
-	timeout  = 30  # Timeout for all sockets
-	whois    = 5   # Delay between WHOIS requests
-	ztimeout = 200 # Timeout for zero data from server
+	channels = 3   if not settings.daemon else 2   # Maximum number of channels to scan at once
+	delay    = 300 if not settings.daemon else 600 # Delay before registering nick (if enabled) & sending /LIST
+	join     = 10  if not settings.daemon else 30  # Delay between channel JOINs
+	nick     = 300 if not settings.daemon else 600 # Delay between every random NICK change
+	part     = 10  if not settings.daemon else 30  # Delay before PARTing a channel
+	seconds  = 300 if not settings.daemon else 600 # Maximum seconds to wait when throttled for JOIN
+	threads  = 100 if not settings.daemon else 25  # Maximum number of threads running
+	timeout  = 30  if not settings.daemon else 60  # Timeout for all sockets
+	whois    = 5   if not settings.daemon else 15  # Delay between WHOIS requests
+	ztimeout = 200 if not settings.daemon else 300 # Timeout for zero data from server
 
 donotscan = (
-	'irc.dronebl.org',
-	'irc.alphachat.net',
-	'5.9.164.48',
-	'45.32.74.177',
-	'149.248.55.130',
-	'104.238.146.46'
-	#'2001:19f0:6001:1dc::1',
-	#'2001:19f0:b001:ce3::1',
-	#'2a01:4f8:160:2501:48:164:9:5',
-	#'2001:19f0:6401:17c::1'
+	'irc.dronebl.org',       'irc.alphachat.net',
+	'5.9.164.48',            '45.32.74.177',          '104.238.146.46',               '149.248.55.130',
+	'2001:19f0:6001:1dc::1', '2001:19f0:b001:ce3::1', '2a01:4f8:160:2501:48:164:9:5', '2001:19f0:6401:17c::1'
 )
 
 snapshot = {
@@ -64,7 +56,7 @@ snapshot = {
 	'002' : None, # RPL_YOURHOST
 	'003' : None, # RPL_CREATED
 	'004' : None, # RPL_MYINFO
-	'005' : None, # RPL_ISUPPORT #TODO:  Lots of useful information here can be parsed for fine tuning throttles
+	'005' : None, # RPL_ISUPPORT #TODO:  lots of useful information here can be parsed for fine tuning throttles
 	'006' : None, # RPL_MAP
 	'018' : None, # RPL_MAPUSERS
 	'257' : None, # RPL_ADMINLOC1
@@ -122,6 +114,17 @@ snapshot = {
 	'466' : None, # ERR_YOUWILLBEBANNED
 	'421' : None  # ERR_UNKNOWNCOMMAND
 }
+
+def backup(name):
+	try:
+		with tarfile.open(f'backup/{name}.tar.gz', 'w:gz') as tar:
+			for log in os.listdir('logs'):
+				tar.add('logs/' + log)
+		debug('\033[1;32mBACKUP COMPLETE\033[0m')
+		for log in os.listdir('logs'):
+			os.remove('logs/' + log)
+	except Exception as ex:
+		error('\033[1;31mBACKUP FAILED\033[0m', ex)
 
 def debug(data):
 	print('{0} \033[30m|\033[0m [\033[35m~\033[0m] {1}'.format(time.strftime('%I:%M:%S'), data))
@@ -450,11 +453,22 @@ else:
 	targets = [line.rstrip() for line in open(targets_file).readlines() if line and line not in donotscan]
 	found   = len(targets)
 	debug(f'loaded {found:,} targets')
-	targets = [target for target in targets if not os.path.isfile(f'logs/{target}.json')] # Do not scan targets we already have logged for
+	if settings.daemon:
+		try:
+			os.mkdir('backup')
+		except FileExistsError:
+			pass
+	else:
+		targets = [target for target in targets if not os.path.isfile(f'logs/{target}.json')] # Do not scan targets we already have logged for
 	if len(targets) < found:
 		debug(f'removed {found-len(targets):,} targets we already have logs for already')
 	del found, targets_file
-	random.shuffle(targets)
-	loop = asyncio.get_event_loop()
-	loop.run_until_complete(main(targets))
-	debug('IRCP has finished probing!')
+	while True:
+		random.shuffle(targets)
+		loop = asyncio.get_event_loop()
+		loop.run_until_complete(main(targets))
+		debug('IRCP has finished probing!')
+		if settings.daemon:
+			backup(time.strftime('%y%m%d-%H%M%S'))
+		else:
+			break
