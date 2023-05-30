@@ -105,22 +105,24 @@ All of the raw data from a server is logged & stored. The categories below are s
 | 352     | RPL_WHOREPLY      |
 
 ###### Bad Numerics (channel)
-| Numeric | Title              |
-| ------- | ------------------ |
-| 439     | ERR_TARGETTOOFAST  |
-| 470     | ERR_LINKCHANNEL    |
-| 471     | ERR_CHANNELISFULL  |
-| 473     | ERR_INVITEONLYCHAN |
-| 474     | ERR_BANNEDFROMCHAN |
-| 475     | ERR_BADCHANNELKEY  |
-| 477     | ERR_NEEDREGGEDNICK |
-| 489     | ERR_SECUREONLYCHAN |
-| 519     | ERR_TOOMANYUSERS   |
-| 520     | ERR_OPERONLY       |
+| Numeric | Title               |
+| ------- | ------------------- |
+| 439     | ERR_TARGETTOOFAST   |
+| 405     | ERR_TOOMANYCHANNELS |
+| 470     | ERR_LINKCHANNEL     |
+| 471     | ERR_CHANNELISFULL   |
+| 473     | ERR_INVITEONLYCHAN  |
+| 474     | ERR_BANNEDFROMCHAN  |
+| 475     | ERR_BADCHANNELKEY   |
+| 477     | ERR_NEEDREGGEDNICK  |
+| 489     | ERR_SECUREONLYCHAN  |
+| 519     | ERR_TOOMANYUSERS    |
+| 520     | ERR_OPERONLY        |
 
 ###### Bad Numerics (server)
 | Numeric | Title                |
 | ------- | -------------------- |
+| 451     | ERR_NOTREGISTERED    |
 | 464     | ERR_PASSWDMISMATCH   |
 | 465     | ERR_YOUREBANNEDCREEP |
 | 466     | ERR_YOUWILLBEBANNED  |
@@ -137,6 +139,7 @@ All of the raw data from a server is logged & stored. The categories below are s
 * Colored output option
 * Added daemon mode *(24/7 scanning heavily throttled in this mode)*
 * Add overlapping logs option *(Do not skip networks we already have logs for,just update them with new changes)*
+* Add snapshot boolean for rbl/proxy detection/scanning
 
 ## Mirrors
 - [acid.vegas](https://git.acid.vegas/ircp)
