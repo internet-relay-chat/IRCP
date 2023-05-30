@@ -153,12 +153,12 @@ class probe:
 			try:
 				await self.connect()
 			except Exception as ex:
-				if settings.error_conn:
+				if settings.errors_conn:
 					error(self.display + 'failed to connect using SSL/TLS', ex)
 				try:
 					await self.connect(True)
 				except Exception as ex:
-					if settings.error_conn:
+					if settings.errors_conn:
 						error(self.display + 'failed to connect', ex)
 
 	async def raw(self, data):
