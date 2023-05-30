@@ -289,7 +289,7 @@ class probe:
 				args    = line.split()
 				numeric = args[1]
 				#debug(line)
-				if sys.getsizeof(self.snapshot) >= settings.log_max:
+				if sys.getsizeof(self.snapshot) >= settings.log_max: # TODO: Should we be checking this on every line of data from the server? Need to avoid asyncronous collisions possibly if not
 					with open(f'logs/{self.server}.json{self.multi}', 'w') as fp:
 						json.dump(self.snapshot, fp)
 					self.snapshot = {'raw':list()}
