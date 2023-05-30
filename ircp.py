@@ -317,8 +317,12 @@ class probe:
 					if chan in self.channels['users']:
 						del self.channels['users'][chan]
 					error(f'{self.display}\033[31merror\033[0m - {chan}', line)
+				elif line.startswith('ERROR :Closing Link') and 'dronebl' in line.lower():
+					self.snapshot['proxy'] = True
+					error(self.display + '\033[93mDroneBL detected\033[30m')
+					raise Exception('DroneBL')
 				elif line.startswith('ERROR :Closing Link'):
-					raise Exception('DroneBL') if 'dronebl' in line.lower() else Exception('Banned')
+					raise Exception('Banned')
 				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
 					raise Exception('Throttled')
 				elif line.startswith('ERROR :Access denied'):
@@ -388,7 +392,12 @@ class probe:
 							self.jthrottle = throttle.seconds if seconds > throttle.seconds else seconds
 					error(self.display + '\033[31merror\033[0m - delay found', msg)
 				elif numeric == '465': # ERR_YOUREBANNEDCREEP
-					raise Exception('K-Lined')
+					if 'dronebl' in line.lower():
+						self.snapshot['proxy'] = True
+						error(self.display + '\033[93mDroneBL detected\033[30m')
+						raise Exception('DroneBL')
+					else:
+						raise Exception('K-Lined')
 				elif numeric == '464': # ERR_PASSWDMISMATCH
 					raise Exception('Network has a password')
 				elif numeric == 'KILL':
@@ -403,6 +412,14 @@ class probe:
 					target = args[2]
 					msg    = ' '.join(args[3:])[1:]
 					if target == self.nickname:
+						for i in ('proxy','proxys','proxies'):
+							if i in msg.lower():
+								self.snapshot['proxy'] = True
+								check = [ x for x in ('bopm','hopm') if x in line]
+								if check:
+									error(f'{self.display}\033[93m{check.upper()} detected\033[30m')
+								else:
+									error(self.display + '\033[93mProxy Monitor detected\033[30m')
 						for i in ('You must have been using this nick for','You must be connected for','not connected long enough','Please wait', 'You cannot list within the first'):
 							if i in msg:
 								error(self.display + '\033[31merror\033[0m - delay found', msg)
@@ -414,6 +431,8 @@ class probe:
 							self.snapshot['services'] = True
 						elif '!' not in args[0]:
 							if 'dronebl.org/lookup' in msg:
+								self.snapshot['proxy'] = True
+								error(self.display + '\033[93mDroneBL detected\033[30m')
 								raise Exception('DroneBL')
 							else:
 								if [i for i in ('You\'re banned','You are permanently banned','You are banned','You are not welcome') if i in msg]:
