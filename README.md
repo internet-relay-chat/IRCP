@@ -11,7 +11,7 @@ The idea is to create a *proof-of-concept* documenting how large-scale informati
 ## Order of Operations
 First, an attempt to connect using SSL/TLS on port 6697 is made, which if it fails, will fall back to a standard connection on port 6667.
 
-Once connected, server information is gathered from `LUSERS`, `VERSION`, `LINKS`, `MAP`, `ADMIN`, `MOTD`, `LIST`, replies.
+Once connected, server information is gathered from `ADMIN`, `CAP LS`, `MODULES -all`, `VERSION`, `IRCOPS`, `MAP`, `INFO`, `LINKS`, `STATS p`, & `LIST` replies.
 
 An attempt to register a nickname is then made by trying to contact NickServ.
 
@@ -61,14 +61,16 @@ All of the raw data from a server is logged & stored. The categories below are s
 | 003     | RPL_CREATED    |
 | 004     | RPL_MYINFO     |
 | 005     | RPL_ISUPPORT   |
-| 372     | RPL_MOTD       |
-| 351     | RPL_VERSION    |
-| 364     | RPL_LINKS      |
 | 006     | RPL_MAP        |
 | 018     | RPL_MAPUSERS   |
 | 257     | RPL_ADMINLOC1  |
 | 258     | RPL_ADMINLOC2  |
 | 259     | RPL_ADMINEMAIL |
+| 351     | RPL_VERSION    |
+| 364     | RPL_LINKS      |
+| 371     | RPL_INFO       |
+| 372     | RPL_MOTD       |
+| 304     | RPL_TEXT       |
 
 ###### Statistics Information (LUSERS)
 | Numeric | Title             |
@@ -102,18 +104,23 @@ All of the raw data from a server is logged & stored. The categories below are s
 | 338     | RPL_WHOISACTUALLY |
 | 352     | RPL_WHOREPLY      |
 
-###### Bad Numerics
+###### Bad Numerics (channel)
+| Numeric | Title              |
+| ------- | ------------------ |
+| 439     | ERR_TARGETTOOFAST  |
+| 470     | ERR_LINKCHANNEL    |
+| 471     | ERR_CHANNELISFULL  |
+| 473     | ERR_INVITEONLYCHAN |
+| 474     | ERR_BANNEDFROMCHAN |
+| 475     | ERR_BADCHANNELKEY  |
+| 477     | ERR_NEEDREGGEDNICK |
+| 489     | ERR_SECUREONLYCHAN |
+| 519     | ERR_TOOMANYUSERS   |
+| 520     | ERR_OPERONLY       |
+
+###### Bad Numerics (server)
 | Numeric | Title                |
 | ------- | -------------------- |
-| 470     | ERR_LINKCHANNEL      |
-| 471     | ERR_CHANNELISFULL    |
-| 473     | ERR_INVITEONLYCHAN   |
-| 474     | ERR_BANNEDFROMCHAN   |
-| 475     | ERR_BADCHANNELKEY    |
-| 477     | ERR_NEEDREGGEDNICK   |
-| 489     | ERR_SECUREONLYCHAN   |
-| 519     | ERR_TOOMANYUSERS     |
-| 520     | ERR_OPERONLY         |
 | 464     | ERR_PASSWDMISMATCH   |
 | 465     | ERR_YOUREBANNEDCREEP |
 | 466     | ERR_YOUWILLBEBANNED  |
@@ -123,7 +130,6 @@ All of the raw data from a server is logged & stored. The categories below are s
 ![](.screens/preview.png)
 
 ## Todo
-* Capture `IRCOPS` & `STATS p` command outputs
 * Built in identd
 * Checking for IPv6 availability *(SSL= in 005 responses may help verify IPv6)*
 * Support for IRC servers using old versions of SSL

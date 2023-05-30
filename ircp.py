@@ -49,10 +49,11 @@ donotscan = (
 snapshot = {
 	'server'   : None,
 	'host'     : None,
-	'raw'      : [], # all other data goes in here
-	'NOTICE'   : None,
 	'services' : False,
 	'ssl'      : False,
+	'raw'      : [], # all other data goes in here
+	'CAP'      : None,
+	'NOTICE'   : None,
 
 	# server information
 	'001' : None, # RPL_WELCOME
@@ -67,7 +68,9 @@ snapshot = {
 	'259' : None, # RPL_ADMINEMAIL
 	'351' : None, # RPL_VERSION
 	'364' : None, # RPL_LINKS
+	'371' : None, # RPL_INFO
 	'372' : None, # RPL_MOTD
+	'304' : None, # RPL_TEXT
 
 	# statistic information (lusers)
 	'250' : None, # RPL_STATSCONN
@@ -108,9 +111,9 @@ snapshot = {
 	'520' : None, # ERR_OPERONLY
 
 	# bad server numerics
-	'464' :	None, # ERR_PASSWDMISMATCH
-	'465' :	None, # ERR_YOUREBANNEDCREEP
-	'466' :	None, # ERR_YOUWILLBEBANNED
+	'464' : None, # ERR_PASSWDMISMATCH
+	'465' : None, # ERR_YOUREBANNEDCREEP
+	'466' : None, # ERR_YOUWILLBEBANNED
 	'421' : None  # ERR_UNKNOWNCOMMAND
 }
 
@@ -202,7 +205,10 @@ class probe:
 				'pass': settings.ns_pass if settings.ns_pass else rndnick(),
 				'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))
 			}
-			for command in ('ADMIN', 'VERSION', 'LINKS', 'MAP', 'PRIVMSG NickServ :REGISTER {0} {1}'.format(login['pass'], login['mail']), 'LIST'):
+			cmds = ('ADMIN', 'CAP LS', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'STATS p', 'VERSION')
+			random.shuffle(cmds)
+			cmds += ('PRIVMSG NickServ :REGISTER {0} {1}'.format(login['pass'], login['mail']), 'LIST')
+			for command in cmds:
 				try:
 					await self.raw(command)
 				except:
