@@ -11,13 +11,15 @@ import sys
 import time
 
 class settings:
-	errors   = True                         # Show errors in console
-	nickname = 'IRCP'                       # None = random
-	username = 'ircp'                       # None = random
-	realname = 'scan@internetrelaychat.org' # None = random
-	ns_mail  = 'scan@internetrelaychat.org' # None = random@random.[com|net|org]
-	ns_pass  = 'changeme'                   # None = random
-	vhost    = None                         # Bind to a specific IP address
+	errors      = True                         # Show errors in console
+	errors_conn = False                        # Show connection errors in console
+	log_max     = 5000000                      # Maximum log size (in bytes) before starting another
+	nickname    = 'IRCP'                       # None = random
+	username    = 'ircp'                       # None = random
+	realname    = 'scan@internetrelaychat.org' # None = random
+	ns_mail     = 'scan@internetrelaychat.org' # None = random@random.[com|net|org]
+	ns_pass     = 'changeme'                   # None = random
+	vhost       = None                         # Bind to a specific IP address
 
 class throttle:
 	channels = 3   # Maximum number of channels to scan at once
@@ -137,7 +139,8 @@ class probe:
 		self.display   = server.ljust(18)+' | '
 		self.semaphore = semaphore
 		self.nickname  = None
-		self.snapshot  = copy.deepcopy(snapshot) # <--- GET FUCKED PYTHON
+		self.snapshot  = {'raw':list()}
+		self.multi     = ''
 		self.channels  = {'all':list(), 'current':list(), 'users':dict()}
 		self.nicks     = {'all':list(),   'check':list()}
 		self.loops     = {'init':None,'chan':None,'nick':None,'whois':None}
@@ -150,11 +153,13 @@ class probe:
 			try:
 				await self.connect()
 			except Exception as ex:
-				error(self.display + 'failed to connect using SSL/TLS', ex)
+				if settings.error_conn:
+					error(self.display + 'failed to connect using SSL/TLS', ex)
 				try:
 					await self.connect(True)
 				except Exception as ex:
-					error(self.display + 'failed to connect', ex)
+					if settings.error_conn:
+						error(self.display + 'failed to connect', ex)
 
 	async def raw(self, data):
 		self.writer.write(data[:510].encode('utf-8') + b'\r\n')
@@ -176,17 +181,17 @@ class probe:
 		}
 		self.nickname = identity['nick']
 		self.reader, self.writer = await asyncio.wait_for(asyncio.open_connection(**options), throttle.timeout)
+		del options
 		if not fallback:
 			self.snapshot['ssl'] = True
 		await self.raw('USER {0} 0 * :{1}'.format(identity['user'], identity['real']))
 		await self.raw('NICK ' + identity['nick'])
+		del identity
 		await self.listen()
 		for item in self.loops:
 			if self.loops[item]:
 				self.loops[item].cancel()
-		for item in [rm for rm in self.snapshot if not self.snapshot[rm]]:
-			del self.snapshot[item]
-		with open(f'logs/{self.server}.json', 'w') as fp:
+		with open(f'logs/{self.server}.json{self.multi}', 'w') as fp:
 			json.dump(self.snapshot, fp)
 		debug(self.display + 'finished scanning')
 
@@ -204,6 +209,7 @@ class probe:
 					break
 				else:
 					await asyncio.sleep(1.5)
+			del login
 			if not self.channels['all']:
 				error(self.display + 'no channels found')
 				await self.raw('QUIT')
@@ -217,8 +223,8 @@ class probe:
 			while self.channels['all']:
 				while len(self.channels['current']) >= throttle.channels:
 					await asyncio.sleep(1)
-				chan = random.choice(self.channels['all'])
 				await asyncio.sleep(self.jthrottle)
+				chan = random.choice(self.channels['all'])
 				self.channels['all'].remove(chan)
 				try:
 					await self.raw('JOIN ' + chan)
@@ -228,6 +234,7 @@ class probe:
 			while self.nicks['check']:
 				await asyncio.sleep(1)
 			self.loops['whois'].cancel()
+			del self.loops['whois']
 			await self.raw('QUIT')
 		except asyncio.CancelledError:
 			pass
@@ -257,6 +264,7 @@ class probe:
 					except:
 						break
 					else:
+						del nick
 						await asyncio.sleep(throttle.whois)
 				else:
 					await asyncio.sleep(1)
@@ -275,8 +283,13 @@ class probe:
 				args    = line.split()
 				numeric = args[1]
 				#debug(line)
-				if numeric in self.snapshot:
-					if not self.snapshot[numeric]:
+				if sys.getsizeof(self.snapshot) >= settings.log_max:
+					with open(f'logs/{self.server}.json{self.multi}', 'w') as fp:
+						json.dump(self.snapshot, fp)
+					self.snapshot = {'raw':list()}
+					self.multi = '.1' if not self.multi else '.' + str(int(self.multi[1:])+1)
+				if numeric in snapshot:
+					if numeric not in self.snapshot:
 						self.snapshot[numeric] = line
 					elif line not in self.snapshot[numeric]:
 						if type(self.snapshot[numeric]) == list:
@@ -308,13 +321,15 @@ class probe:
 						self.display = f'{self.server.ljust(18)} | {host.ljust(25)} | '
 					debug(self.display + 'connected')
 					self.loops['init'] = asyncio.create_task(self.loop_initial())
-				elif numeric == '322' and len(args) >= 5: # RPL_LIST
+				elif numeric == '322' and len(args) >= 4: # RPL_LIST
 					chan  = args[3]
-					users = args[4]
 					self.channels['all'].append(chan)
-					self.channels['users'][chan] = users
+					if len(args) >= 5:
+						users = args[4]
+						self.channels['users'][chan] = users
 				elif numeric == '323': # RPL_LISTEND
 					if self.channels['all']:
+						del self.loops['init']
 						debug(self.display + 'found {0} channel(s)'.format(str(len(self.channels['all']))))
 						self.loops['chan']  = asyncio.create_task(self.loop_channels())
 						self.loops['nick']  = asyncio.create_task(self.loop_nick())
@@ -329,6 +344,7 @@ class probe:
 					self.channels['current'].append(chan)
 					if chan in self.channels['users']:
 						debug('{0}scanning {1} users in {2}'.format(self.display, self.channels['users'][chan].ljust(4), chan))
+						del self.channels['users'][chan]
 					else:
 						debug(f'{self.display}scanning      users in {chan}')
 					await self.raw('WHO ' + chan)
@@ -406,17 +422,18 @@ else:
 if not os.path.isfile(targets_file):
 	raise SystemExit('error: invalid file path')
 else:
+	try:
+		os.mkdir('logs')
+	except FileExistsError:
+		pass
 	targets = [line.rstrip() for line in open(targets_file).readlines() if line and line not in donotscan]
 	found   = len(targets)
 	debug(f'loaded {found:,} targets')
 	targets = [target for target in targets if not os.path.isfile(f'logs/{target}.json')] # Do not scan targets we already have logged for
 	if len(targets) < found:
 		debug(f'removed {found-len(targets):,} targets we already have logs for already')
+	del found, targets_file
 	random.shuffle(targets)
-	try:
-		os.mkdir('logs')
-	except FileExistsError:
-		pass
 	loop = asyncio.get_event_loop()
 	loop.run_until_complete(main(targets))
 	debug('IRCP has finished probing!')

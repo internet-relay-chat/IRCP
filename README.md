@@ -24,15 +24,17 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 
 ## Config
 ###### Settings
-| Setting    | Default Value                  | Description                                |
-| ---------- | ------------------------------ | ------------------------------------------ |
-| `errors`   | `False`                        | Show errors in console                     |
-| `nickname` | `"IRCP"`                       | IRC nickname *(`None` = random)*           |
-| `username` | `"ircp"`                       | IRC username *(`None` = random)*           |
-| `realname` | `"internetrelaychat.org"`      | IRC realname *(`None` = random)*           |
-| `ns_mail`  | `"scan@internetrelaychat.org"` | NickServ email address *(`None` = random)* |
-| `ns_pass`  | `"changeme"`                   | NickServ password *(None = random)*        |
-| `vhost`    | `None`                         | Bind to a specific IP address              |
+| Setting       | Default Value                  | Description                                           |
+| ------------- | ------------------------------ | ----------------------------------------------------- |
+| `errors`      | `True`                         | Show errors in console                                |
+| `errors_conn` | `False`                        | Show connection errors in console                     |
+| `log_max`     | `5000000`                      | Maximum log size *(in bytes)* before starting another |
+| `nickname`    | `"IRCP"`                       | IRC nickname *(`None` = random)*                      |
+| `username`    | `"ircp"`                       | IRC username *(`None` = random)*                      |
+| `realname`    | `"internetrelaychat.org"`      | IRC realname *(`None` = random)*                      |
+| `ns_mail`     | `"scan@internetrelaychat.org"` | NickServ email address *(`None` = random)*            |
+| `ns_pass`     | `"changeme"`                   | NickServ password *(None = random)*                   |
+| `vhost`       | `None`                         | Bind to a specific IP address                         |
 
 ###### Throttle
 | Setting    | Default Value | Description                                                   |
