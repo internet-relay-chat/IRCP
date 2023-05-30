@@ -133,13 +133,13 @@ All of the raw data from a server is logged & stored. The categories below are s
 ![](.screens/preview.png)
 
 ## Threat Scope
+![](.screens/base.png)
+
 While IRC is an unfavored chat protocol as of 2023 *(roughly 7,000 networks)*, it still has a beating heart **(over 200,000 users & channels)* with potential for user growth & active development being done on [IRCv3](https://ircv3.net/) protocol implementations.
 
 Point is..it's not going anywhere.
 
 With that being said, the ability for anyone to be able to do what this project is intend to do, leads way for a lot of potential threats:
-
-![](.screens/base.png)
 
 * A new RCE is found for a very common IRC bot
 * A new 0day is found for a certain IRCd version
