@@ -17,7 +17,7 @@ An attempt to register a nickname is then made by trying to contact NickServ.
 
 Next, every channel is joined with a `WHO` command sent & every new nick found gets a `WHOIS`.
 
-Everything is done in a heavily throttled manner for stealth to avoid detection.
+Everything is done in a *carefully* throttled manner for stealth to avoid detection. An extensive amount research on IRC daemons, services, & common practices used by network administrators was done & has fine tuned this project to be able to evade common triggers that thwart *(finally got to use this word)* what we are doing.
 
 ## Opt-out
 The IRC networks we scanned are PUBLIC networks...any person can freely connect & parse the same information. Send your hate mail to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)
@@ -26,6 +26,7 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 ###### Settings
 | Setting       | Default Value                  | Description                                           |
 | ------------- | ------------------------------ | ----------------------------------------------------- |
+| `color`       | `True`                         | Show colors in console output                         |
 | `errors`      | `True`                         | Show errors in console                                |
 | `errors_conn` | `False`                        | Show connection errors in console                     |
 | `log_max`     | `5000000`                      | Maximum log size *(in bytes)* before starting another |
@@ -33,7 +34,7 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 | `username`    | `"ircp"`                       | IRC username *(`None` = random)*                      |
 | `realname`    | `"internetrelaychat.org"`      | IRC realname *(`None` = random)*                      |
 | `ns_mail`     | `"scan@internetrelaychat.org"` | NickServ email address *(`None` = random)*            |
-| `ns_pass`     | `"changeme"`                   | NickServ password *(None = random)*                   |
+| `ns_pass`     | `"changeme"`                   | NickServ password *(`None` = random)*                   |
 | `vhost`       | `None`                         | Bind to a specific IP address                         |
 
 ###### Throttle
@@ -51,7 +52,7 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 | `ztimeout` | `200`         | Timeout for zero data from server                             |
 
 ## Collected Information
-All of the raw data from a server is logged & stored. The categories below are stored seperately & hilight the key information we are after:
+All of the raw data from a server is logged & stored. The categories below are stored seperately & hilight the key [information](https://www.alien.net.au/irc/irc2numerics.html) we are after:
 
 ###### Server Information
 | Numeric | Title          |
