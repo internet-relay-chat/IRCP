@@ -11,8 +11,10 @@ import sys
 import time
 
 class settings:
+	#daemon      = False                        # Run IRCP in daemon mode (24/7 throttled scanning)
 	errors      = True                         # Show errors in console
 	errors_conn = False                        # Show connection errors in console
+	#log_overlap = False                        # Do not skip networks we have logs for, just update them
 	log_max     = 5000000                      # Maximum log size (in bytes) before starting another
 	nickname    = 'IRCP'                       # None = random
 	username    = 'ircp'                       # None = random
