@@ -63,7 +63,7 @@ snapshot = {
 	'002' : None, # RPL_YOURHOST
 	'003' : None, # RPL_CREATED
 	'004' : None, # RPL_MYINFO
-	'005' : None, # RPL_ISUPPORT
+	'005' : None, # RPL_ISUPPORT #TODO:  Lots of useful information here can be parsed for fine tuning throttles
 	'006' : None, # RPL_MAP
 	'018' : None, # RPL_MAPUSERS
 	'257' : None, # RPL_ADMINLOC1
