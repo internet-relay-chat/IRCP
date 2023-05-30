@@ -341,7 +341,11 @@ class probe:
 					self.loops['init'] = asyncio.create_task(self.loop_initial())
 				elif numeric == '311' and len(args) >= 4: # RPL_WHOISUSER
 					nick = args[3]
-					debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
+					if 'open proxy' in line.lower() or 'proxy monitor' in line.lower():
+						self.snapshot['proxy'] = True
+						error(self.display + '\033[93mProxy Monitor detected\033[30m')
+					else:
+						debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
 				elif numeric == '322' and len(args) >= 4: # RPL_LIST
 					chan  = args[3]
 					self.channels['all'].append(chan)
