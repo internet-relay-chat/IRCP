@@ -148,7 +148,7 @@ def ssl_ctx():
 class probe:
 	def __init__(self, server, semaphore):
 		self.server    = server
-		self.display   = server.ljust(18)+'\033[30m|\033[0m'
+		self.display   = server.ljust(18)+' \033[30m|\033[0m '
 		self.semaphore = semaphore
 		self.nickname  = None
 		self.snapshot  = {'raw':list()}
