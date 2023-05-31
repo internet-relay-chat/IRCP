@@ -59,16 +59,16 @@ snapshot = {
 	'004' : None, # RPL_MYINFO
 	'005' : None, # RPL_ISUPPORT #TODO:  lots of useful information here can be parsed for fine tuning throttles
 	'006' : None, # RPL_MAP
-	'270' : None, # RPL_MAPUSERS
 	'018' : None, # RPL_MAPUSERS
 	'257' : None, # RPL_ADMINLOC1
 	'258' : None, # RPL_ADMINLOC2
 	'259' : None, # RPL_ADMINEMAIL
+	'270' : None, # RPL_MAPUSERS
+	'304' : None, # RPL_TEXT
 	'351' : None, # RPL_VERSION
 	'364' : None, # RPL_LINKS
 	'371' : None, # RPL_INFO
 	'372' : None, # RPL_MOTD
-	'304' : None, # RPL_TEXT
 	'386' : None, # RPL_IRCOPS
 	'387' : None, # RPL_IRCOPS
 
@@ -83,9 +83,9 @@ snapshot = {
 	'266' : None, # RPL_GLOBALUSERS
 
 	# channel information
+	'322' : None, # RPL_LIST
 	'332' : None, # RPL_TOPIC
 	'353' : None, # RPL_NAMREPLY
-	'322' : None, # RPL_LIST
 
 	# user information (whois/who)
 	'042' : None, # RPL_YOURID
@@ -121,10 +121,10 @@ snapshot = {
 
 	# bad channel numerics
 	'403' : None, # ERR_NOSUCHCHANNEL
+	'405' : None, # ERR_TOOMANYCHANNELS (TODO: Maybe reference MAXCHANNELS= in 005 responses)
 	'435' : None, # ERR_BANONCHAN
 	'439' : None, # ERR_TARGETTOOFAST
 	'448' : None, # ERR_FORBIDDENCHANNEL
-	'405' : None, # ERR_TOOMANYCHANNELS (TODO: Maybe reference MAXCHANNELS= in 005 responses)
 	'470' : None, # ERR_LINKCHANNEL
 	'471' : None, # ERR_CHANNELISFULL
 	'473' : None, # ERR_INVITEONLYCHAN
@@ -142,13 +142,13 @@ snapshot = {
 	'926' : None, # ERR_BADCHANNEL
 
 	# bad server numerics
+	'416' : None, # ERR_QUERYTOOLONG (LIST truncated)
+	'421' : None, # ERR_UNKNOWNCOMMAND
 	'451' : None, # ERR_NOTREGISTERED (TODO: Do we need to raise an exception for this numeric?
 	'464' : None, # ERR_PASSWDMISMATCH
 	'465' : None, # ERR_YOUREBANNEDCREEP
 	'466' : None, # ERR_YOUWILLBEBANNED
-	'484' : None, # ERR_RESTRICTED
-	'421' : None, # ERR_UNKNOWNCOMMAND
-	'416' : None  # ERR_QUERYTOOLONG (LIST truncated)
+	'484' : None  # ERR_RESTRICTED
 }
 
 def backup(name):
