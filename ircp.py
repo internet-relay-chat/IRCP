@@ -59,6 +59,7 @@ snapshot = {
 	'004' : None, # RPL_MYINFO
 	'005' : None, # RPL_ISUPPORT #TODO:  lots of useful information here can be parsed for fine tuning throttles
 	'006' : None, # RPL_MAP
+	'270' : None, # RPL_MAPUSERS
 	'018' : None, # RPL_MAPUSERS
 	'257' : None, # RPL_ADMINLOC1
 	'258' : None, # RPL_ADMINLOC2
@@ -68,11 +69,14 @@ snapshot = {
 	'371' : None, # RPL_INFO
 	'372' : None, # RPL_MOTD
 	'304' : None, # RPL_TEXT
+	'386' : None, # RPL_IRCOPS
+	'387' : None, # RPL_IRCOPS
 
 	# statistic information (lusers)
 	'250' : None, # RPL_STATSCONN
 	'251' : None, # RPL_LUSERCLIENT
 	'252' : None, # RPL_LUSEROP
+	'253' : None, # RPL_LUSERUNKNOWN
 	'254' : None, # RPL_LUSERCHANNELS
 	'255' : None, # RPL_LUSERME
 	'265' : None, # RPL_LOCALUSERS
@@ -84,38 +88,67 @@ snapshot = {
 	'322' : None, # RPL_LIST
 
 	# user information (whois/who)
-	'311' : None, # RPL_WHOISUSER
+	'042' : None, # RPL_YOURID
+	'221' : None, # RPL_UMODEIS
+	'276' : None, # RPL_WHOISCERTFP
 	'307' : None, # RPL_WHOISREGNICK
+	'308' : None, # RPL_WHOISADMIN
+	'309' : None, # RPL_WHOISADMIN
+	'310' : None, # RPL_WHOISHELPOP
+	'311' : None, # RPL_WHOISUSER
 	'312' : None, # RPL_WHOISSERVER
-	'337' : None, # RPL_WHOISTEXT
 	'313' : None, # RPL_WHOISOPERATOR
-	'671' : None, # RPL_WHOISSECURE
+	'316' : None, # RPL_WHOISPRIVDEAF
+	'317' : None, # RPL_WHOISIDLE
 	'319' : None, # RPL_WHOISCHANNELS
 	'320' : None, # RPL_WHOISSPECIAL
-	'276' : None, # RPL_WHOISCERTFP
+	'325' : None, # RPL_WHOISWEBIRC
 	'330' : None, # RPL_WHOISACCOUNT
+	'335' : None, # RPL_WHOISBOT
+	'337' : None, # RPL_WHOISTEXT
 	'338' : None, # RPL_WHOISACTUALLY
+	'339' : None, # RPL_WHOISMARKS
+	'344' : None, # RPL_WHOISCOUNTRY
+	'350' : None, # RPL_WHOISGATEWAY
 	'352' : None, # RPL_WHOREPLY
+	'378' : None, # RPL_WHOISHOST
+	'379' : None, # RPL_WHOISMODES
+	'615' : None, # RPL_WHOISMODES
+	'616' : None, # RPL_WHOISHOST
+	'617' : None, # RPL_WHOISSSLFP / RPL_WHOISBOT
+	'671' : None, # RPL_WHOISSECURE
+	'900' : None, # RPL_LOGGEDIN
 
 	# bad channel numerics
+	'403' : None, # ERR_NOSUCHCHANNEL
+	'435' : None, # ERR_BANONCHAN
 	'439' : None, # ERR_TARGETTOOFAST
+	'448' : None, # ERR_FORBIDDENCHANNEL
 	'405' : None, # ERR_TOOMANYCHANNELS (TODO: Maybe reference MAXCHANNELS= in 005 responses)
 	'470' : None, # ERR_LINKCHANNEL
 	'471' : None, # ERR_CHANNELISFULL
 	'473' : None, # ERR_INVITEONLYCHAN
 	'474' : None, # ERR_BANNEDFROMCHAN
 	'475' : None, # ERR_BADCHANNELKEY
+	'476' : None, # ERR_BADCHANMASK
 	'477' : None, # ERR_NEEDREGGEDNICK
+	'479' : None, # ERR_BADCHANNAME
+	'480' : None, # ERR_THROTTLE
+	'485' : None, # ERR_CHANBANREASON
 	'489' : None, # ERR_SECUREONLYCHAN
+	'488' : None, # ERR_NOSSL
 	'519' : None, # ERR_TOOMANYUSERS
 	'520' : None, # ERR_OPERONLY
+	'926' : None, # ERR_BADCHANNEL
 
 	# bad server numerics
 	'451' : None, # ERR_NOTREGISTERED (TODO: Do we need to raise an exception for this numeric?
 	'464' : None, # ERR_PASSWDMISMATCH
 	'465' : None, # ERR_YOUREBANNEDCREEP
 	'466' : None, # ERR_YOUWILLBEBANNED
-	'421' : None  # ERR_UNKNOWNCOMMAND
+	'484' : None, # ERR_RESTRICTED
+	'421' : None, # ERR_UNKNOWNCOMMAND
+	'416' : None  # ERR_QUERYTOOLONG (LIST truncated)
 }
 
 def backup(name):
@@ -315,7 +348,7 @@ class probe:
 							self.snapshot[numeric] = [self.snapshot[numeric], line]
 				else:
 					self.snapshot['raw'].append(line)
-				if numeric in ('405','470','471','473','747','475','477','489','519','520') and len(args) >= 5:
+				if numeric in ('403','405','435','442','448','470','471','473','474','475','476','477','479','480','485','488','489','519','520','926') and len(args) >= 5:
 					chan = args[3]
 					msg = ' '.join(args[4:])[1:]
 					if chan in self.channels['users']:
