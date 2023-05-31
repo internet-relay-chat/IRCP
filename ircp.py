@@ -87,6 +87,7 @@ snapshot = {
 	'311' : None, # RPL_WHOISUSER
 	'307' : None, # RPL_WHOISREGNICK
 	'312' : None, # RPL_WHOISSERVER
+	'313' : None, # RPL_WHOISOPERATOR
 	'671' : None, # RPL_WHOISSECURE
 	'319' : None, # RPL_WHOISCHANNELS
 	'320' : None, # RPL_WHOISSPECIAL
