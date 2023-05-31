@@ -154,6 +154,7 @@ With that being said, the ability for anyone to be able to do what this project 
 * Create a seperate log for failed connections *(Sync to file every hour maybe)*
 * Ability to link multiple IRCP instances running in daemon mode together for balancing
 * Remote syncing the logs to another server
+* Finish adding numerics to README & include alternet numeric definitions
 
 ## Mirrors
 - [acid.vegas](https://git.acid.vegas/ircp)
