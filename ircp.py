@@ -41,15 +41,16 @@ donotscan = (
 )
 
 snapshot = {
-	'server'   : None,
-	'host'     : None,
-	'services' : False,
-	'ssl'      : False,
-	'proxy'    : False,
-	'raw'      : [], # all other data goes in here
-	'CAP'      : None,
-	'KILL'     : None, # TODO: currently does not verify it was us being killed
-	'NOTICE'   : None,
+	'server'     : None,
+	'host'       : None,
+	'services'   : False,
+	'registered' : False,
+	'ssl'        : False,
+	'proxy'      : False,
+	'raw'        : [], # all other data goes in here
+	'CAP'        : None,
+	'KILL'       : None, # TODO: currently does not verify it was us being killed
+	'NOTICE'     : None,
 
 	# server information
 	'001' : None, # RPL_WELCOME
@@ -438,6 +439,9 @@ class probe:
 							await self.raw(f'NOTICE {nick} \001VERSION {version}\001')
 						elif nick == 'NickServ':
 							self.snapshot['services'] = True
+							if 'is now registered' in msg or f'Nickname {self.nickname} registered' in msg:
+								debug(self.display + '\033[35mNickServ\033[0m registered')
+								self.snapshot['registered'] = True
 						elif '!' not in args[0]:
 							if 'dronebl.org/lookup' in msg:
 								self.snapshot['proxy'] = True
