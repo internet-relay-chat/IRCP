@@ -40,115 +40,17 @@ donotscan = (
 	'2001:19f0:6001:1dc::1', '2001:19f0:b001:ce3::1', '2a01:4f8:160:2501:48:164:9:5', '2001:19f0:6401:17c::1'
 )
 
-snapshot = {
-	'server'     : None,
-	'host'       : None,
-	'services'   : False,
-	'registered' : False,
-	'ssl'        : False,
-	'proxy'      : False,
-	'raw'        : [], # all other data goes in here
-	'CAP'        : None,
-	'KILL'       : None, # TODO: currently does not verify it was us being killed
-	'NOTICE'     : None,
-
-	# server information
-	'001' : None, # RPL_WELCOME
-	'002' : None, # RPL_YOURHOST
-	'003' : None, # RPL_CREATED
-	'004' : None, # RPL_MYINFO
-	'005' : None, # RPL_ISUPPORT #TODO:  lots of useful information here can be parsed for fine tuning throttles
-	'006' : None, # RPL_MAP
-	'018' : None, # RPL_MAPUSERS
-	'257' : None, # RPL_ADMINLOC1
-	'258' : None, # RPL_ADMINLOC2
-	'259' : None, # RPL_ADMINEMAIL
-	'270' : None, # RPL_MAPUSERS
-	'304' : None, # RPL_TEXT
-	'351' : None, # RPL_VERSION
-	'364' : None, # RPL_LINKS
-	'371' : None, # RPL_INFO
-	'372' : None, # RPL_MOTD
-	'386' : None, # RPL_IRCOPS
-	'387' : None, # RPL_IRCOPS
-
-	# statistic information (lusers)
-	'250' : None, # RPL_STATSCONN
-	'251' : None, # RPL_LUSERCLIENT
-	'252' : None, # RPL_LUSEROP
-	'253' : None, # RPL_LUSERUNKNOWN
-	'254' : None, # RPL_LUSERCHANNELS
-	'255' : None, # RPL_LUSERME
-	'265' : None, # RPL_LOCALUSERS
-	'266' : None, # RPL_GLOBALUSERS
-
-	# channel information
-	'322' : None, # RPL_LIST
-	'332' : None, # RPL_TOPIC
-	'353' : None, # RPL_NAMREPLY
-
-	# user information (whois/who)
-	'042' : None, # RPL_YOURID
-	'221' : None, # RPL_UMODEIS
-	'276' : None, # RPL_WHOISCERTFP
-	'307' : None, # RPL_WHOISREGNICK
-	'308' : None, # RPL_WHOISADMIN
-	'309' : None, # RPL_WHOISADMIN
-	'310' : None, # RPL_WHOISHELPOP
-	'311' : None, # RPL_WHOISUSER
-	'312' : None, # RPL_WHOISSERVER
-	'313' : None, # RPL_WHOISOPERATOR
-	'316' : None, # RPL_WHOISPRIVDEAF
-	'317' : None, # RPL_WHOISIDLE
-	'319' : None, # RPL_WHOISCHANNELS
-	'320' : None, # RPL_WHOISSPECIAL
-	'325' : None, # RPL_WHOISWEBIRC
-	'330' : None, # RPL_WHOISACCOUNT
-	'335' : None, # RPL_WHOISBOT
-	'337' : None, # RPL_WHOISTEXT
-	'338' : None, # RPL_WHOISACTUALLY
-	'339' : None, # RPL_WHOISMARKS
-	'344' : None, # RPL_WHOISCOUNTRY
-	'350' : None, # RPL_WHOISGATEWAY
-	'352' : None, # RPL_WHOREPLY
-	'378' : None, # RPL_WHOISHOST
-	'379' : None, # RPL_WHOISMODES
-	'615' : None, # RPL_WHOISMODES
-	'616' : None, # RPL_WHOISHOST
-	'617' : None, # RPL_WHOISSSLFP / RPL_WHOISBOT
-	'671' : None, # RPL_WHOISSECURE
-	'900' : None, # RPL_LOGGEDIN
-
-	# bad channel numerics
-	'403' : None, # ERR_NOSUCHCHANNEL
-	'405' : None, # ERR_TOOMANYCHANNELS (TODO: Maybe reference MAXCHANNELS= in 005 responses)
-	'435' : None, # ERR_BANONCHAN
-	'439' : None, # ERR_TARGETTOOFAST
-	'448' : None, # ERR_FORBIDDENCHANNEL
-	'470' : None, # ERR_LINKCHANNEL
-	'471' : None, # ERR_CHANNELISFULL
-	'473' : None, # ERR_INVITEONLYCHAN
-	'474' : None, # ERR_BANNEDFROMCHAN
-	'475' : None, # ERR_BADCHANNELKEY
-	'476' : None, # ERR_BADCHANMASK
-	'477' : None, # ERR_NEEDREGGEDNICK
-	'479' : None, # ERR_BADCHANNAME
-	'480' : None, # ERR_THROTTLE
-	'485' : None, # ERR_CHANBANREASON
-	'489' : None, # ERR_SECUREONLYCHAN
-	'488' : None, # ERR_NOSSL
-	'519' : None, # ERR_TOOMANYUSERS
-	'520' : None, # ERR_OPERONLY
-	'926' : None, # ERR_BADCHANNEL
-
-	# bad server numerics
-	'416' : None, # ERR_QUERYTOOLONG (LIST truncated)
-	'421' : None, # ERR_UNKNOWNCOMMAND
-	'451' : None, # ERR_NOTREGISTERED (TODO: Do we need to raise an exception for this numeric?
-	'464' : None, # ERR_PASSWDMISMATCH
-	'465' : None, # ERR_YOUREBANNEDCREEP
-	'466' : None, # ERR_YOUWILLBEBANNED
-	'484' : None  # ERR_RESTRICTED
+badchan = {
+	'403' : 'ERR_NOSUCHCHANNEL',    '405' : 'ERR_TOOMANYCHANNELS',
+	'435' : 'ERR_BANONCHAN',        '442' : 'ERR_NOTONCHANNEL',
+	'448' : 'ERR_FORBIDDENCHANNEL', '470' : 'ERR_LINKCHANNEL',
+	'471' : 'ERR_CHANNELISFULL',    '473' : 'ERR_INVITEONLYCHAN',
+	'474' : 'ERR_BANNEDFROMCHAN',   '475' : 'ERR_BADCHANNELKEY',
+	'476' : 'ERR_BADCHANMASK',      '477' : 'ERR_NEEDREGGEDNICK',
+	'479' : 'ERR_BADCHANNAME',      '480' : 'ERR_THROTTLE',
+	'485' : 'ERR_CHANBANREASON',    '488' : 'ERR_NOSSL',
+	'489' : 'ERR_SECUREONLYCHAN',   '519' : 'ERR_TOOMANYUSERS',
+	'520' : 'ERR_OPERONLY',         '926' : 'ERR_BADCHANNEL'
 }
 
 def backup(name):
@@ -187,7 +89,7 @@ class probe:
 		self.display   = server.ljust(18)+' \033[30m|\033[0m unknown network           \033[30m|\033[0m '
 		self.semaphore = semaphore
 		self.nickname  = None
-		self.snapshot  = {'raw':list()}
+		self.snapshot  = dict()
 		self.multi     = ''
 		self.channels  = {'all':list(), 'current':list(), 'users':dict()}
 		self.nicks     = {'all':list(), 'check':list()}
@@ -326,47 +228,43 @@ class probe:
 	async def listen(self):
 		while True:
 			try:
-				if self.reader.at_eof(): # TODO: can we use while self.reader.at_eof() outside of the try block?
+				if self.reader.at_eof():
 					break
-				data    = await asyncio.wait_for(self.reader.readuntil(b'\r\n'), throttle.ztimeout)
-				line    = data.decode('utf-8').strip()
-				args    = line.split()
-				numeric = args[1]
-				#debug(line)
-				if sys.getsizeof(self.snapshot) >= settings.log_max: # TODO: Should we be checking this on every line of data from the server? Need to avoid asyncronous collisions possibly if not
+				data  = await asyncio.wait_for(self.reader.readuntil(b'\r\n'), throttle.ztimeout)
+				line  = data.decode('utf-8').strip()
+				args  = line.split()
+				event = args[1].upper()
+				if sys.getsizeof(self.snapshot) >= settings.log_max:
 					with open(f'logs/{self.server}.json{self.multi}', 'w') as fp:
 						json.dump(self.snapshot, fp)
-					self.snapshot = {'raw':list()}
+					self.snapshot = dict()
 					self.multi = '.1' if not self.multi else '.' + str(int(self.multi[1:])+1)
-				if numeric in snapshot:
-					if numeric not in self.snapshot:
-						self.snapshot[numeric] = line
-					elif line not in self.snapshot[numeric]:
-						if type(self.snapshot[numeric]) == list:
-							self.snapshot[numeric].append(line)
-						elif type(self.snapshot[numeric]) == str:
-							self.snapshot[numeric] = [self.snapshot[numeric], line]
+				if args[0].upper() == 'ERROR':
+					self.snapshot['ERROR'] = self.snapshot['ERROR']+[line,] if 'ERROR' in self.snapshot else [line,]
+				elif not event.isdigit() and event not in ('CAP','INVITE','JOIN','KICK','KILL','MODE','NICK','NOTICE','PART','PRIVMSG','QUIT','TOPIC','WHO'):
+					self.snapshot['RAW'] = self.snapshot['RAW']+[line,] if 'RAW' in self.snapshot else [line,]
 				else:
-					self.snapshot['raw'].append(line)
-				if numeric in ('403','405','435','442','448','470','471','473','474','475','476','477','479','480','485','488','489','519','520','926') and len(args) >= 5:
+					self.snapshot[event] = self.snapshot[event]+[line,] if event in self.snapshot else [line,]
+				if event in badchans and len(args) >= 4:
 					chan = args[3]
-					msg = ' '.join(args[4:])[1:]
 					if chan in self.channels['users']:
 						del self.channels['users'][chan]
-					error(f'{self.display}\033[31merror\033[0m - {chan}', msg)
-				elif line.startswith('ERROR :Closing Link') and 'dronebl' in line.lower():
-					self.snapshot['proxy'] = True
-					error(self.display + '\033[93mDroneBL detected\033[30m')
-					raise Exception('DroneBL')
-				elif line.startswith('ERROR :Closing Link'):
-					raise Exception('Banned')
-				elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
-					raise Exception('Throttled')
-				elif line.startswith('ERROR :Access denied'):
-					raise Exception('Access denied')
+					error(f'{self.display}\033[31merror\033[0m - {chan}', badchans[event])
+				elif line.startswith('ERROR :'):
+					if line.startswith('ERROR :Closing Link'):
+						if 'dronebl' in line.lower():
+							self.snapshot['proxy'] = True
+							error(self.display + '\033[93mDroneBL detected\033[30m')
+							raise Exception('DroneBL')
+						else:
+							raise Exception('Banned')
+					elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
+						raise Exception('Throttled')
+					elif line.startswith('ERROR :Access denied'):
+						raise Exception('Access denied')
 				elif args[0] == 'PING':
 					await self.raw('PONG ' + args[1][1:])
-				elif numeric == '001': #RPL_WELCOME
+				elif event == '001': #RPL_WELCOME
 					host = args[0][1:]
 					self.snapshot['server'] = self.server
 					self.snapshot['host']   = host
@@ -376,32 +274,32 @@ class probe:
 						self.display = f'{self.server.ljust(18)} \033[30m|\033[0m {host.ljust(25)} \033[30m|\033[0m '
 					debug(self.display + '\033[1;32mconnected\033[0m')
 					self.loops['init'] = asyncio.create_task(self.loop_initial())
-				elif numeric == '311' and len(args) >= 4: # RPL_WHOISUSER
+				elif event == '311' and len(args) >= 4: # RPL_WHOISUSER
 					nick = args[3]
 					if 'open proxy' in line.lower() or 'proxy monitor' in line.lower():
 						self.snapshot['proxy'] = True
 						error(self.display + '\033[93mProxy Monitor detected\033[30m')
 					else:
 						debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
-				elif numeric == '322' and len(args) >= 4: # RPL_LIST
+				elif event == '322' and len(args) >= 4: # RPL_LIST
 					chan  = args[3]
 					users = args[4]
 					if users != '0': # no need to JOIN empty channels...
 						self.channels['all'].append(chan)
 						self.channels['users'][chan] = users
-				elif numeric == '323': # RPL_LISTEND
+				elif event == '323': # RPL_LISTEND
 					if self.channels['all']:
 						del self.loops['init']
 						debug(self.display + '\033[36mLIST\033[0m found \033[93m{0}\033[0m channel(s)'.format(str(len(self.channels['all']))))
 						self.loops['chan']  = asyncio.create_task(self.loop_channels())
 						self.loops['nick']  = asyncio.create_task(self.loop_nick())
 						self.loops['whois'] = asyncio.create_task(self.loop_whois())
-				elif numeric == '352' and len(args) >= 8: # RPL_WHORPL
+				elif event == '352' and len(args) >= 8: # RPL_WHORPL
 					nick = args[7]
 					if nick not in self.nicks['all']+[self.nickname,]:
 						self.nicks['all'].append(nick)
 						self.nicks['check'].append(nick)
-				elif numeric == '366' and len(args) >= 4: # RPL_ENDOFNAMES
+				elif event == '366' and len(args) >= 4: # RPL_ENDOFNAMES
 					chan = args[3]
 					self.channels['current'].append(chan)
 					debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[30m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
@@ -410,16 +308,16 @@ class probe:
 					await asyncio.sleep(throttle.part)
 					await self.raw('PART ' + chan)
 					self.channels['current'].remove(chan)
-				elif numeric == '421' and len(args) >= 3: # ERR_UNKNOWNCOMMAND
+				elif event == '421' and len(args) >= 3: # ERR_UNKNOWNCOMMAND
 					msg = ' '.join(args[2:])
 					if 'You must be connected for' in msg:
 						error(self.display + '\033[31merror\033[0m - delay found', msg)
-				elif numeric == '433': # ERR_NICKINUSE
+				elif event == '433': # ERR_NICKINUSE
 					if not settings.nickname:
 						await self.raw('NICK ' + rndnick())
 					else:
 						await self.raw('NICK ' + settings.nickname + str(random.randint(1000,9999)))
-				elif numeric == '439' and len(args) >= 5: # ERR_TARGETTOOFAST
+				elif event == '439' and len(args) >= 5: # ERR_TARGETTOOFAST
 					chan = args[3]
 					msg  = ' '.join(args[4:])[1:]
 					self.channels['all'].append(chan)
@@ -429,30 +327,30 @@ class probe:
 							seconds = int(seconds)
 							self.jthrottle = throttle.seconds if seconds > throttle.seconds else seconds
 					error(self.display + '\033[31merror\033[0m - delay found', msg)
-				elif numeric == '465': # ERR_YOUREBANNEDCREEP
+				elif event == '465': # ERR_YOUREBANNEDCREEP
 					if 'dronebl' in line.lower():
 						self.snapshot['proxy'] = True
 						error(self.display + '\033[93mDroneBL detected\033[30m')
 						raise Exception('DroneBL')
 					else:
 						raise Exception('K-Lined')
-				elif numeric == '464': # ERR_PASSWDMISMATCH
+				elif event == '464': # ERR_PASSWDMISMATCH
 					raise Exception('Network has a password')
-				elif numeric == '487': # ERR_MSGSERVICES
+				elif event == '487': # ERR_MSGSERVICES
 					if '"/msg NickServ" is no longer supported' in line:
 						login = {
 							'pass': settings.ns_pass if settings.ns_pass else rndnick(),
 							'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))
 						}
 						await self.raw('/NickServ REGISTER {0} {1}'.format(login['pass'], login['mail']))
-				elif numeric == 'KILL':
+				elif event == 'KILL':
 					nick = args[2]
 					if nick == self.nickname:
 						raise Exception('KILL')
 					else:
 						if 'KILL' in self.snapshot:
 							del self.snapshot['KILL']
-				elif numeric in ('NOTICE','PRIVMSG') and len(args) >= 4:
+				elif event in ('NOTICE','PRIVMSG') and len(args) >= 4:
 					nick   = args[0].split('!')[1:]
 					target = args[2]
 					msg    = ' '.join(args[3:])[1:]
@@ -460,7 +358,7 @@ class probe:
 						for i in ('proxy','proxys','proxies'):
 							if i in msg.lower():
 								self.snapshot['proxy'] = True
-								check = [ x for x in ('bopm','hopm') if x in line]
+								check = [x for x in ('bopm','hopm') if x in line]
 								if check:
 									error(f'{self.display}\033[93m{check.upper()} detected\033[30m')
 								else:
