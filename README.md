@@ -152,8 +152,8 @@ With that being said, the ability for anyone to be able to do what this project 
 * Checking for IPv6 availability *(SSL= in 005 responses may help verify IPv6)*
 * Support for IRC servers using old versions of SSL
 * Create a seperate log for failed connections *(Sync to file every hour maybe)*
-* Add snapshot boolean for rbl/proxy detection/scanning
 * Ability to link multiple IRCP instances running in daemon mode together for balancing
+* Remote syncing the logs to another server
 
 ## Mirrors
 - [acid.vegas](https://git.acid.vegas/ircp)

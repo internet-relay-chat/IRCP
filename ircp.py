@@ -148,7 +148,7 @@ def ssl_ctx():
 class probe:
 	def __init__(self, server, semaphore):
 		self.server    = server
-		self.display   = server.ljust(18)+' \033[30m|\033[0m '
+		self.display   = server.ljust(18)+' \033[30m|\033[0m unknown network           \033[30m|\033[0m '
 		self.semaphore = semaphore
 		self.nickname  = None
 		self.snapshot  = {'raw':list()}
@@ -312,11 +312,12 @@ class probe:
 							self.snapshot[numeric] = [self.snapshot[numeric], line]
 				else:
 					self.snapshot['raw'].append(line)
-				if numeric in ('470','471','473','747','475','477','489','519','520'):
+				if numeric in ('405','470','471','473','747','475','477','489','519','520') and len(args) >= 5:
 					chan = args[3]
+					msg = ' '.join(args[4:])[1:]
 					if chan in self.channels['users']:
 						del self.channels['users'][chan]
-					error(f'{self.display}\033[31merror\033[0m - {chan}', line)
+					error(f'{self.display}\033[31merror\033[0m - {chan}', msg)
 				elif line.startswith('ERROR :Closing Link') and 'dronebl' in line.lower():
 					self.snapshot['proxy'] = True
 					error(self.display + '\033[93mDroneBL detected\033[30m')
@@ -355,7 +356,7 @@ class probe:
 				elif numeric == '323': # RPL_LISTEND
 					if self.channels['all']:
 						del self.loops['init']
-						debug(self.display + 'found \033[93m{0}\033[0m channel(s)'.format(str(len(self.channels['all']))))
+						debug(self.display + '\033[36mLIST\033[0m found \033[93m{0}\033[0m channel(s)'.format(str(len(self.channels['all']))))
 						self.loops['chan']  = asyncio.create_task(self.loop_channels())
 						self.loops['nick']  = asyncio.create_task(self.loop_nick())
 						self.loops['whois'] = asyncio.create_task(self.loop_whois())
