@@ -363,7 +363,7 @@ class probe:
 						self.loops['whois'] = asyncio.create_task(self.loop_whois())
 				elif numeric == '352' and len(args) >= 8: # RPL_WHORPL
 					nick = args[7]
-					if nick not in self.nicks['all']+['ChanServ',self.nickname]:
+					if nick not in self.nicks['all']+[self.nickname,]:
 						self.nicks['all'].append(nick)
 						self.nicks['check'].append(nick)
 				elif numeric == '366' and len(args) >= 4: # RPL_ENDOFNAMES
