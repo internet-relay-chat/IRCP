@@ -19,9 +19,12 @@ def parse(option, data, raw=True):
 if len(sys.argv) >= 2:
 	option  = sys.argv[1]
 	raw    = True
+	search = False
 	if len(sys.argv) == 3:
 		if sys.argv[2] == 'clean':
 			raw = False
+		elif sys.argv[2] == 'search':
+			search = True
 	logs  = os.listdir('logs')
 	found = list()
 	for log in logs:
@@ -38,7 +41,7 @@ if len(sys.argv) >= 2:
 				elif type(data) == list:
 					for item in data:
 						found.append(parse(option, item, raw))
-			else:
+			elif search:
 				for item in data:
 					_data = data[item]
 					if type(_data) == str and option in _data:
