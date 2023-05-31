@@ -402,6 +402,13 @@ class probe:
 						raise Exception('K-Lined')
 				elif numeric == '464': # ERR_PASSWDMISMATCH
 					raise Exception('Network has a password')
+				elif numeric == '487': # ERR_MSGSERVICES
+					if '"/msg NickServ" is no longer supported' in line:
+						login = {
+							'pass': settings.ns_pass if settings.ns_pass else rndnick(),
+							'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))
+						}
+						await self.raw('/NickServ REGISTER {0} {1}'.format(login['pass'], login['mail']))
 				elif numeric == 'KILL':
 					nick = args[2]
 					if nick == self.nickname:
