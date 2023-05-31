@@ -349,9 +349,9 @@ class probe:
 						debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
 				elif numeric == '322' and len(args) >= 4: # RPL_LIST
 					chan  = args[3]
-					self.channels['all'].append(chan)
-					if len(args) >= 5:
-						users = args[4]
+					users = args[4]
+					if users != '0': # no need to JOIN empty channels...
+						self.channels['all'].append(chan)
 						self.channels['users'][chan] = users
 				elif numeric == '323': # RPL_LISTEND
 					if self.channels['all']:
@@ -368,11 +368,8 @@ class probe:
 				elif numeric == '366' and len(args) >= 4: # RPL_ENDOFNAMES
 					chan = args[3]
 					self.channels['current'].append(chan)
-					if chan in self.channels['users']:
-						debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[30m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
-						del self.channels['users'][chan]
-					else:
-						debug(f'{self.display}\033[32mJOIN\033[0m {chan}')
+					debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[30m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
+					del self.channels['users'][chan]
 					await self.raw('WHO ' + chan)
 					await asyncio.sleep(throttle.part)
 					await self.raw('PART ' + chan)
