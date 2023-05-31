@@ -45,7 +45,7 @@ snapshot = {
 	'host'     : None,
 	'services' : False,
 	'ssl'      : False,
-	#'proxy'    : False,
+	'proxy'    : False,
 	'raw'      : [], # all other data goes in here
 	'CAP'      : None,
 	'KILL'     : None, # TODO: currently does not verify it was us being killed
