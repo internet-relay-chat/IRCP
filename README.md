@@ -56,9 +56,9 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 ![](.screens/preview.png)
 
 ## Threat Scope
-While IRC is an unfavored chat protocol as of 2023 *(roughly 7,000 networks)*, it still has a beating heart **(over 3000,000 users & channels)* with potential for user growth & active development being done on [IRCv3](https://ircv3.net/) protocol implementations.
+While IRC is an generally unfavored chat protocol as of 2023 *(roughly 7,000 networks)*, it still has a beating heart **(over 300,000 users & channels)* with potential for user growth & active development being done on [IRCv3](https://ircv3.net/) protocol implementations.
 
-Point is..IRC is not going anywhere. With that being said, every network being on the same port leads way for a lot of potential threats:
+Point is..it's is not going anywhere. With that being said, every network being on the same port leads way for a lot of potential threats:
 
 * A new RCE is found for a very common IRC bot
 * A new 0day is found for a certain IRCd version
@@ -66,9 +66,9 @@ Point is..IRC is not going anywhere. With that being said, every network being o
 * Tracing users network/channel whereabouts
 * Mass spamming attacks on every network
 
-![](.screens/base.png)
-
 Mass scanning *default* ports of services is nothing new & though port 6667 is not a common target, running an IRCd on a **non-standard** port should be the **standard**. If we have learned anything in the last 10 years, using standard ports for *anything* is almost always smells like a bad idea.
+
+![](.screens/base.png)
 
 ## Todo
 * Built in identd
