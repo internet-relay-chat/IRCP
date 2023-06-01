@@ -11,7 +11,7 @@ Meant to be used in combination with [masscan](https://github.com/robertdavidgra
 The idea is to create a *proof-of-concept* documenting how large-scale information gathering on the IRC protocol can be malicious & invasive to privacy.
 
 ## Order of Operations
-First, an attempt to connect using SSL/TLS on port 6697 is made, which if it fails, will fall back to a standard connection on port 6667. The output of **005** *(RPL_ISUPPORT)* is checked for an `SSL=` option to try & locate the servers secure ports.
+First, an attempt to connect using SSL/TLS on port 6697 is made, which if it fails, will fall back to a standard connection on port 6667. The output of **005** *(RPL_ISUPPORT)* is checked for the `SSL=` option to try & locate secure ports.
 
 Once connected, server information is gathered from `ADMIN`, `CAP LS`, `MODULES -all`, `VERSION`, `IRCOPS`, `MAP`, `INFO`, `LINKS`, `STATS p`, & `LIST` replies. An attempt to register a nickname is then made by trying to contact NickServ.
 
@@ -56,8 +56,6 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 ![](.screens/preview.png)
 
 ## Threat Scope
-![](.screens/base.png)
-
 While IRC is an unfavored chat protocol as of 2023 *(roughly 7,000 networks)*, it still has a beating heart **(over 3000,000 users & channels)* with potential for user growth & active development being done on [IRCv3](https://ircv3.net/) protocol implementations.
 
 Point is..IRC is not going anywhere. With that being said, every network being on the same port leads way for a lot of potential threats:
@@ -67,6 +65,8 @@ Point is..IRC is not going anywhere. With that being said, every network being o
 * Old IRC daemons running versions with known CVE's
 * Tracing users network/channel whereabouts
 * Mass spamming attacks on every network
+
+![](.screens/base.png)
 
 Mass scanning *default* ports of services is nothing new & though port 6667 is not a common target, running an IRCd on a **non-standard** port should be the **standard**. If we have learned anything in the last 10 years, using standard ports for *anything* is almost always smells like a bad idea.
 
