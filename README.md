@@ -2,6 +2,8 @@
 
 ![](.screens/ircp.png)
 
+*TRIPLE 6 SEVEN OCULOUS*
+
 A robust information gathering tool for large scale reconnaissance on [Internet Relay Chat](https://en.wikipedia.org/wiki/Internet_Relay_Chat) servers, made for future usage with [internetrelaychat.org](https://internetrelaychat.org) for public statistics on the protocol.
 
 Meant to be used in combination with [masscan](https://github.com/robertdavidgraham/masscan) checking **0.0.0.0/0** *(the entire IPv4 range)* for port **6667**.
@@ -9,15 +11,15 @@ Meant to be used in combination with [masscan](https://github.com/robertdavidgra
 The idea is to create a *proof-of-concept* documenting how large-scale information gathering on the IRC protocol can be malicious & invasive to privacy.
 
 ## Order of Operations
-First, an attempt to connect using SSL/TLS on port 6697 is made, which if it fails, will fall back to a standard connection on port 6667.
+First, an attempt to connect using SSL/TLS on port 6697 is made, which if it fails, will fall back to a standard connection on port 6667. The output of **005** *(RPL_ISUPPORT)* is checked for an `SSL=` option to try & locate the servers secure ports.
 
-Once connected, server information is gathered from `ADMIN`, `CAP LS`, `MODULES -all`, `VERSION`, `IRCOPS`, `MAP`, `INFO`, `LINKS`, `STATS p`, & `LIST` replies.
+Once connected, server information is gathered from `ADMIN`, `CAP LS`, `MODULES -all`, `VERSION`, `IRCOPS`, `MAP`, `INFO`, `LINKS`, `STATS p`, & `LIST` replies. An attempt to register a nickname is then made by trying to contact NickServ.
 
-An attempt to register a nickname is then made by trying to contact NickServ.
+Lastly, every channel is joined with a `WHO` command sent & every new nick found gets a `WHOIS` sent.
 
-Next, every channel is joined with a `WHO` command sent & every new nick found gets a `WHOIS`.
+Once we have finishing scanning a server, the information found for that server is then saved to a JSON file. The data in the log files are stored in categories based on [IRC numerics](https://raw.githubusercontent.com/internet-relay-chat/random/master/numerics.txt) & events.
 
-Everything is done in a *carefully* throttled manner for stealth to avoid detection. An extensive amount research on IRC daemons, services, & common practices used by network administrators was done & has fine tuned this project to be able to evade common triggers that thwart *(finally got to use this word)* what we are doing.
+Everything is done in a *carefully* throttled manner for stealth to avoid detection. An extensive amount research on IRC daemons, services, & common practices used by network administrators was done & has fine tuned this project to be able to evade common triggers that thwart what we are doing.
 
 ## Opt-out
 The IRC networks we scanned are PUBLIC networks...any person can freely connect & parse the same information. Send your hate mail to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)
@@ -26,7 +28,6 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 ###### Settings
 | Setting       | Default Value                  | Description                                           |
 | ------------- | ------------------------------ | ----------------------------------------------------- |
-| `color`       | `True`                         | Show colors in console output                         |
 | `errors`      | `True`                         | Show errors in console                                |
 | `errors_conn` | `False`                        | Show connection errors in console                     |
 | `log_max`     | `5000000`                      | Maximum log size *(in bytes)* before starting another |
@@ -34,7 +35,7 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 | `username`    | `"ircp"`                       | IRC username *(`None` = random)*                      |
 | `realname`    | `"internetrelaychat.org"`      | IRC realname *(`None` = random)*                      |
 | `ns_mail`     | `"scan@internetrelaychat.org"` | NickServ email address *(`None` = random)*            |
-| `ns_pass`     | `"changeme"`                   | NickServ password *(`None` = random)*                   |
+| `ns_pass`     | `"changeme"`                   | NickServ password *(`None` = random)*                 |
 | `vhost`       | `None`                         | Bind to a specific IP address                         |
 
 ###### Throttle
@@ -57,17 +58,17 @@ The IRC networks we scanned are PUBLIC networks...any person can freely connect 
 ## Threat Scope
 ![](.screens/base.png)
 
-While IRC is an unfavored chat protocol as of 2023 *(roughly 7,000 networks)*, it still has a beating heart **(over 200,000 users & channels)* with potential for user growth & active development being done on [IRCv3](https://ircv3.net/) protocol implementations.
+While IRC is an unfavored chat protocol as of 2023 *(roughly 7,000 networks)*, it still has a beating heart **(over 3000,000 users & channels)* with potential for user growth & active development being done on [IRCv3](https://ircv3.net/) protocol implementations.
 
-Point is..it's not going anywhere.
-
-With that being said, the ability for anyone to be able to do what this project is intend to do, leads way for a lot of potential threats:
+Point is..IRC is not going anywhere. With that being said, every network being on the same port leads way for a lot of potential threats:
 
 * A new RCE is found for a very common IRC bot
 * A new 0day is found for a certain IRCd version
 * Old IRC daemons running versions with known CVE's
 * Tracing users network/channel whereabouts
 * Mass spamming attacks on every network
+
+Mass scanning *default* ports of services is nothing new & though port 6667 is not a common target, running an IRCd on a **non-standard** port should be the **standard**. If we have learned anything in the last 10 years, using standard ports for *anything* is almost always smells like a bad idea.
 
 ## Todo
 * Built in identd
@@ -76,6 +77,7 @@ With that being said, the ability for anyone to be able to do what this project 
 * Create a seperate log for failed connections *(Sync to file every hour maybe)*
 * Ability to link multiple IRCP instances running in daemon mode together for balancing
 * Remote syncing the logs to another server
+* Support for handling a target list that contains host:port:ssl for networks on non-standard ports
 
 ## Mirrors
 - [acid.vegas](https://git.acid.vegas/ircp)

@@ -274,6 +274,12 @@ class probe:
 						self.display = f'{self.server.ljust(18)} \033[30m|\033[0m {host.ljust(25)} \033[30m|\033[0m '
 					debug(self.display + '\033[1;32mconnected\033[0m')
 					self.loops['init'] = asyncio.create_task(self.loop_initial())
+				elif event == '005':
+					for item in args:
+						if item.startswith('SSL=') and item[4:]:
+							if not self.snapshot['ssl']:
+								self.snapshot['ssl'] = item[4:]
+							break
 				elif event == '311' and len(args) >= 4: # RPL_WHOISUSER
 					nick = args[3]
 					if 'open proxy' in line.lower() or 'proxy monitor' in line.lower():
