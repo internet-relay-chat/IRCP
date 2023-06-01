@@ -11,13 +11,13 @@ Meant to be used in combination with [masscan](https://github.com/robertdavidgra
 The idea is to create a *proof-of-concept* documenting how large-scale information gathering on the IRC protocol can be malicious & invasive to privacy.
 
 ## Order of Operations
-First, an attempt to connect using SSL/TLS on port 6697 is made, which if it fails, will fall back to a standard connection on port 6667. The output of **005** *(RPL_ISUPPORT)* is checked for the `SSL=` option to try & locate secure ports.
+First, an attempt to connect using SSL/TLS on port 6697 is made, which will fall back to a standard connection on port 6667 if it fails. The **RPL_ISUPPORT** *(005)* response is checked for the `SSL=` option to try & locate secure ports.
 
 Once connected, server information is gathered from `ADMIN`, `CAP LS`, `MODULES -all`, `VERSION`, `IRCOPS`, `MAP`, `INFO`, `LINKS`, `STATS p`, & `LIST` replies. An attempt to register a nickname is then made by trying to contact NickServ.
 
 Lastly, every channel is joined with a `WHO` command sent & every new nick found gets a `WHOIS` sent.
 
-Once we have finishing scanning a server, the information found for that server is then saved to a JSON file. The data in the log files are stored in categories based on [IRC numerics](https://raw.githubusercontent.com/internet-relay-chat/random/master/numerics.txt) & events.
+Once we have finishing scanning a server, the information found is saved to a JSON file. The data in the logs are stored in categories based on [numerics](https://raw.githubusercontent.com/internet-relay-chat/random/master/numerics.txt) *(001 is RPL_WELCOME, 322 is RPL_LIST, etc)* & events *(JOIN, MODE, KILL, etc)*.
 
 Everything is done in a *carefully* throttled manner for stealth to avoid detection. An extensive amount research on IRC daemons, services, & common practices used by network administrators was done & has fine tuned this project to be able to evade common triggers that thwart what we are doing.
 
