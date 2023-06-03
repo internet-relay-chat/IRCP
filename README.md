@@ -78,6 +78,7 @@ Mass scanning *default* ports of services is nothing new & though port 6667 is n
 * Ability to link multiple IRCP instances running in daemon mode together for balancing
 * Remote syncing the logs to another server
 * Support for handling a target list that contains host:port:ssl for networks on non-standard ports
+* Give props to [bwall](https://github.com/bwall) for giving me the idea with his [ircsnapshot](https://github.com/bwall/ircsnapshot) repository
 
 ## Mirrors
 - [acid.vegas](https://git.acid.vegas/ircp)
