@@ -84,8 +84,9 @@ def ssl_ctx():
 	return ctx
 
 class probe:
-	def __init__(self, server, semaphore):
+	def __init__(self, semaphore, server, port, family=2):
 		self.server    = server
+		self.port      = port
 		self.display   = server.ljust(18)+' \033[30m|\033[0m unknown network           \033[30m|\033[0m '
 		self.semaphore = semaphore
 		self.nickname  = None
@@ -121,7 +122,7 @@ class probe:
 			'port'       : 6667 if fallback else 6697,
 			'limit'      : 1024,
 			'ssl'        : None if fallback else ssl_ctx(),
-			'family'     : 2, # 2 = IPv4 | 10 = IPv6 (TODO: Check for IPv6 using server DNS)
+			'family'     : self.family,
 			'local_addr' : settings.vhost
 		}
 		identity = {
@@ -131,6 +132,7 @@ class probe:
 		}
 		self.nickname = identity['nick']
 		self.reader, self.writer = await asyncio.wait_for(asyncio.open_connection(**options), throttle.timeout)
+		self.snapshot['port'] = option['ports']
 		del options
 		if not fallback:
 			self.snapshot['ssl'] = True
@@ -272,7 +274,7 @@ class probe:
 						self.display = f'{self.server.ljust(18)} \033[30m|\033[0m {host[:22]}... \033[30m|\033[0m '
 					else:
 						self.display = f'{self.server.ljust(18)} \033[30m|\033[0m {host.ljust(25)} \033[30m|\033[0m '
-					debug(self.display + '\033[1;32mconnected\033[0m')
+					debug(self.display + f'\033[1;32mconnected\033[0m \033[30m(port {self.port})\033[0m')
 					self.loops['init'] = asyncio.create_task(self.loop_initial())
 				elif event == '005':
 					for item in args:
@@ -399,7 +401,17 @@ async def main(targets):
 	sema = asyncio.BoundedSemaphore(throttle.threads) # B O U N D E D   S E M A P H O R E   G A N G
 	jobs = list()
 	for target in targets:
-		jobs.append(asyncio.ensure_future(probe(target, sema).run()))
+		server = ':'.join(target.split(':')[-1:])
+		port   = ':'.join(target.split(':')[:-1])
+		try:
+			ipaddress.IPv4Address(server)
+			jobs.append(asyncio.ensure_future(probe(sema, server, port, 2).run()))
+		except:
+			try:
+				ipaddress.IPv6Address(server)
+				jobs.append(asyncio.ensure_future(probe(sema, server, port, 10).run()))
+			except:
+				error('failed to scan '+target, 'invalid ip address')
 	await asyncio.gather(*jobs)
 
 # Main
