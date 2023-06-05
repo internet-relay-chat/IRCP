@@ -254,7 +254,7 @@ class probe:
 					if line.startswith('ERROR :Closing Link'):
 						if 'dronebl' in line.lower():
 							self.snapshot['proxy'] = True
-							error(self.display + '\033[93mDroneBL detected\033[30m')
+							error(self.display + '\033[93mDroneBL detected\033[0m')
 							raise Exception('DroneBL')
 						else:
 							raise Exception('Banned')
@@ -284,7 +284,7 @@ class probe:
 					nick = args[3]
 					if 'open proxy' in line.lower() or 'proxy monitor' in line.lower():
 						self.snapshot['proxy'] = True
-						error(self.display + '\033[93mProxy Monitor detected\033[30m')
+						error(self.display + '\033[93mProxy Monitor detected\033[0m')
 					else:
 						debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
 				elif event == '322' and len(args) >= 4: # RPL_LIST
@@ -308,7 +308,7 @@ class probe:
 				elif event == '366' and len(args) >= 4: # RPL_ENDOFNAMES
 					chan = args[3]
 					self.channels['current'].append(chan)
-					debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[30m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
+					debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[0m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
 					del self.channels['users'][chan]
 					await self.raw('WHO ' + chan)
 					await asyncio.sleep(throttle.part)
@@ -336,7 +336,7 @@ class probe:
 				elif event == '465': # ERR_YOUREBANNEDCREEP
 					if 'dronebl' in line.lower():
 						self.snapshot['proxy'] = True
-						error(self.display + '\033[93mDroneBL detected\033[30m')
+						error(self.display + '\033[93mDroneBL detected\033[0m')
 						raise Exception('DroneBL')
 					else:
 						raise Exception('K-Lined')
@@ -366,9 +366,9 @@ class probe:
 								self.snapshot['proxy'] = True
 								check = [x for x in ('bopm','hopm') if x in line]
 								if check:
-									error(f'{self.display}\033[93m{check.upper()} detected\033[30m')
+									error(f'{self.display}\033[93m{check.upper()} detected\033[0m')
 								else:
-									error(self.display + '\033[93mProxy Monitor detected\033[30m')
+									error(self.display + '\033[93mProxy Monitor detected\033[0m')
 						for i in ('You must have been using this nick for','You must be connected for','not connected long enough','Please wait', 'You cannot list within the first'):
 							if i in msg:
 								error(self.display + '\033[31merror\033[0m - delay found', msg)
