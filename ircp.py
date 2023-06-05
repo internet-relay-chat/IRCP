@@ -245,11 +245,11 @@ class probe:
 					self.snapshot['RAW'] = self.snapshot['RAW']+[line,] if 'RAW' in self.snapshot else [line,]
 				else:
 					self.snapshot[event] = self.snapshot[event]+[line,] if event in self.snapshot else [line,]
-				if event in badchans and len(args) >= 4:
+				if event in badchan and len(args) >= 4:
 					chan = args[3]
 					if chan in self.channels['users']:
 						del self.channels['users'][chan]
-					error(f'{self.display}\033[31merror\033[0m - {chan}', badchans[event])
+					error(f'{self.display}\033[31merror\033[0m - {chan}', badchan[event])
 				elif line.startswith('ERROR :'):
 					if line.startswith('ERROR :Closing Link'):
 						if 'dronebl' in line.lower():
