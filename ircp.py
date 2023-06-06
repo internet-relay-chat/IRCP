@@ -53,6 +53,26 @@ badchan = {
 	'520' : 'ERR_OPERONLY',         '926' : 'ERR_BADCHANNEL'
 }
 
+badserver = {
+	'install identd'                              : 'Identd required',
+	'trying to reconnect too fast'                : 'Throttled',
+	'your host is trying to (re)connect too fast' : 'Throttled',
+	'reconnecting too fast'                       : 'Throttled',
+	'access denied'                               : 'Access denied',
+	'not authorized to'                           : 'Not authorized',
+	'not authorised to'                           : 'Not authorized',
+	'password mismatch'                           : 'Password mismatch',
+	'dronebl'                                     : 'DroneBL',
+	'dnsbl'                                       : 'DNSBL',
+	'g:lined'                                     : 'G:Lined',
+	'z:lined'                                     : 'Z:Lined',
+	'timeout'                                     : 'Timeout',
+	'closing link'                                : 'Banned',
+	'banned'                                      : 'Banned',
+	'client exited'                               : 'QUIT',
+	'quit'                                        : 'QUIT'
+}
+
 def backup(name):
 	try:
 		with tarfile.open(f'backup/{name}.tar.gz', 'w:gz') as tar:
@@ -253,17 +273,11 @@ class probe:
 						del self.channels['users'][chan]
 					error(f'{self.display}\033[31merror\033[0m - {chan}', badchan[event])
 				elif line.startswith('ERROR :'):
-					if line.startswith('ERROR :Closing Link'):
-						if 'dronebl' in line.lower():
+					check = [check for check in badserver if check in line.lower()]
+					if check:
+						if check[0] in ('dronebl','dnsbl'):
 							self.snapshot['proxy'] = True
-							error(self.display + '\033[93mDroneBL detected\033[0m')
-							raise Exception('DroneBL')
-						else:
-							raise Exception('Banned')
-					elif line.startswith('ERROR :Trying to reconnect too fast') or line.startswith('ERROR :Your host is trying to (re)connect too fast') or line.startswith('ERROR :Reconnecting too fast'):
-						raise Exception('Throttled')
-					elif line.startswith('ERROR :Access denied'):
-						raise Exception('Access denied')
+						raise Exception(badserver[check[0]])
 				elif args[0] == 'PING':
 					await self.raw('PONG ' + args[1][1:])
 				elif event == '001': #RPL_WELCOME
@@ -286,7 +300,7 @@ class probe:
 					nick = args[3]
 					if 'open proxy' in line.lower() or 'proxy monitor' in line.lower():
 						self.snapshot['proxy'] = True
-						error(self.display + '\033[93mProxy Monitor detected\033[0m')
+						error(self.display + '\033[93mProxy Monitor detected\033[0m', nick)
 					else:
 						debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
 				elif event == '322' and len(args) >= 4: # RPL_LIST
@@ -336,12 +350,11 @@ class probe:
 							self.jthrottle = throttle.seconds if seconds > throttle.seconds else seconds
 					error(self.display + '\033[31merror\033[0m - delay found', msg)
 				elif event == '465': # ERR_YOUREBANNEDCREEP
-					if 'dronebl' in line.lower():
-						self.snapshot['proxy'] = True
-						error(self.display + '\033[93mDroneBL detected\033[0m')
-						raise Exception('DroneBL')
-					else:
-						raise Exception('K-Lined')
+					check = [check for check in badserver if check in line.lower()]
+					if check:
+						if check[0] in ('dronebl','dnsbl'):
+							self.snapshot['proxy'] = True
+						raise Exception(badserver[check[0]])
 				elif event == '464': # ERR_PASSWDMISMATCH
 					raise Exception('Network has a password')
 				elif event == '487': # ERR_MSGSERVICES
@@ -378,6 +391,9 @@ class probe:
 						if msg[:8] == '\001VERSION':
 							version = random.choice(('http://www.mibbit.com ajax IRC Client','mIRC v6.35 Khaled Mardam-Bey','xchat 0.24.1 Linux 2.6.27-8-eeepc i686','rZNC Version 1.0 [02/01/11] - Built from ZNC','thelounge v3.0.0 -- https://thelounge.chat/'))
 							await self.raw(f'NOTICE {nick} \001VERSION {version}\001')
+						elif ('You are connected' in data or 'Connected securely via' in data) and ('SSL' in data or 'TLS' in data):
+							cipher = data.split()[-1:][0].replace('\'','').replace('"','')
+							self.snapshot['ssl_cipher'] = cipher
 						elif nick == 'NickServ':
 							self.snapshot['services'] = True
 							if 'is now registered' in msg or f'Nickname {self.nickname} registered' in msg:
@@ -389,7 +405,7 @@ class probe:
 								error(self.display + '\033[93mDroneBL detected\033[0m')
 								raise Exception('DroneBL')
 							else:
-								if [i for i in ('You\'re banned','You are permanently banned','You are banned','You are not welcome') if i in msg]:
+								if [i for i in ('You\'re banned','You are permanently banned','You are banned','You are not welcome','Temporary K-line') if i in msg]:
 									raise Exception('K-Lined')
 			except (UnicodeDecodeError, UnicodeEncodeError):
 				pass
