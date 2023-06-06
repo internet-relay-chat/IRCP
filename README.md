@@ -11,12 +11,14 @@ Meant to be used in combination with [masscan](https://github.com/robertdavidgra
 The idea is to create a *proof-of-concept* documenting how large-scale information gathering on the IRC protocol can be malicious & invasive to privacy, while also yielding deep-dive look at the IRC protocol & it's internal statistics & commonalities.
 
 ## Usage
-The only required arguement to pass is a direct path to the targets list, which should be a text file containing a new-line seperated list of targets. Targets must be a valid IPv4 or IPv6 address & can optionally be suffixed with a port.
+The only required arguement to pass is a direct path to the targets list, which should be a text file containing a new-line seperated list of targets.
+
+Targets must be a valid IPv4 or IPv6 address & can optionally be suffixed with a port.
 
 Edit [ircp.py](https://github.com/internet-relay-chat/IRCP/blob/master/ircp.py) & tweak the settings to your favor, though they rest with sane defaults.
 
 ## Order of Operations
-First, an attempt to connect using SSL/TLS is made, which will fall back to a standard connection if it fails. If a non-standard port was given, both standatd & secure connection attempts are made on the port as-well. The **RPL_ISUPPORT** *(005)* response is checked for the `SSL=` option to try & locate secure ports.
+First, an attempt to connect using SSL/TLS is made, which will fall back to a standard connection if it fails. If a non-standard port was given, both standard & secure connection attempts are made on the port as-well. The **RPL_ISUPPORT** *(005)* response is checked for the `SSL=` option to try & locate secure ports.
 
 Once connected, server information is gathered from `ADMIN`, `CAP LS`, `MODULES -all`, `VERSION`, `IRCOPS`, `MAP`, `INFO`, `LINKS`, `STATS p`, & `LIST` replies. An attempt to register a nickname is then made by trying to contact NickServ.
 
