@@ -24,6 +24,7 @@ class settings:
 
 class throttle:
 	channels = 3   if not settings.daemon else 2   # Maximum number of channels to scan at once
+	connect  = 15  if not settings.daemon else 60  # Delay between each connection attempt on a diffferent port
 	delay    = 300 if not settings.daemon else 600 # Delay before registering nick (if enabled) & sending /LIST
 	join     = 10  if not settings.daemon else 30  # Delay between channel JOINs
 	nick     = 300 if not settings.daemon else 600 # Delay between every random NICK change
@@ -34,44 +35,43 @@ class throttle:
 	whois    = 5   if not settings.daemon else 15  # Delay between WHOIS requests
 	ztimeout = 200 if not settings.daemon else 300 # Timeout for zero data from server
 
-donotscan = (
-	'irc.dronebl.org',       'irc.alphachat.net',
-	'5.9.164.48',            '45.32.74.177',          '104.238.146.46',               '149.248.55.130',
-	'2001:19f0:6001:1dc::1', '2001:19f0:b001:ce3::1', '2a01:4f8:160:2501:48:164:9:5', '2001:19f0:6401:17c::1'
-)
-
-badchan = {
-	'403' : 'ERR_NOSUCHCHANNEL',    '405' : 'ERR_TOOMANYCHANNELS',
-	'435' : 'ERR_BANONCHAN',        '442' : 'ERR_NOTONCHANNEL',
-	'448' : 'ERR_FORBIDDENCHANNEL', '470' : 'ERR_LINKCHANNEL',
-	'471' : 'ERR_CHANNELISFULL',    '473' : 'ERR_INVITEONLYCHAN',
-	'474' : 'ERR_BANNEDFROMCHAN',   '475' : 'ERR_BADCHANNELKEY',
-	'476' : 'ERR_BADCHANMASK',      '477' : 'ERR_NEEDREGGEDNICK',
-	'479' : 'ERR_BADCHANNAME',      '480' : 'ERR_THROTTLE',
-	'485' : 'ERR_CHANBANREASON',    '488' : 'ERR_NOSSL',
-	'489' : 'ERR_SECUREONLYCHAN',   '519' : 'ERR_TOOMANYUSERS',
-	'520' : 'ERR_OPERONLY',         '926' : 'ERR_BADCHANNEL'
-}
-
-badserver = {
-	'install identd'                              : 'Identd required',
-	'trying to reconnect too fast'                : 'Throttled',
-	'your host is trying to (re)connect too fast' : 'Throttled',
-	'reconnecting too fast'                       : 'Throttled',
-	'access denied'                               : 'Access denied',
-	'not authorized to'                           : 'Not authorized',
-	'not authorised to'                           : 'Not authorized',
-	'password mismatch'                           : 'Password mismatch',
-	'dronebl'                                     : 'DroneBL',
-	'dnsbl'                                       : 'DNSBL',
-	'g:lined'                                     : 'G:Lined',
-	'z:lined'                                     : 'Z:Lined',
-	'timeout'                                     : 'Timeout',
-	'closing link'                                : 'Banned',
-	'banned'                                      : 'Banned',
-	'client exited'                               : 'QUIT',
-	'quit'                                        : 'QUIT'
-}
+class bad:
+	donotscan = (
+		'irc.dronebl.org',       'irc.alphachat.net',
+		'5.9.164.48',            '45.32.74.177',          '104.238.146.46',               '149.248.55.130',
+		'2001:19f0:6001:1dc::1', '2001:19f0:b001:ce3::1', '2a01:4f8:160:2501:48:164:9:5', '2001:19f0:6401:17c::1'
+	)
+	chan = {
+		'403' : 'ERR_NOSUCHCHANNEL',    '405' : 'ERR_TOOMANYCHANNELS',
+		'435' : 'ERR_BANONCHAN',        '442' : 'ERR_NOTONCHANNEL',
+		'448' : 'ERR_FORBIDDENCHANNEL', '470' : 'ERR_LINKCHANNEL',
+		'471' : 'ERR_CHANNELISFULL',    '473' : 'ERR_INVITEONLYCHAN',
+		'474' : 'ERR_BANNEDFROMCHAN',   '475' : 'ERR_BADCHANNELKEY',
+		'476' : 'ERR_BADCHANMASK',      '477' : 'ERR_NEEDREGGEDNICK',
+		'479' : 'ERR_BADCHANNAME',      '480' : 'ERR_THROTTLE',
+		'485' : 'ERR_CHANBANREASON',    '488' : 'ERR_NOSSL',
+		'489' : 'ERR_SECUREONLYCHAN',   '519' : 'ERR_TOOMANYUSERS',
+		'520' : 'ERR_OPERONLY',         '926' : 'ERR_BADCHANNEL'
+	}
+	error = {
+		'install identd'                 : 'Identd required',
+		'trying to reconnect too fast'   : 'Throttled',
+		'trying to (re)connect too fast' : 'Throttled',
+		'reconnecting too fast'          : 'Throttled',
+		'access denied'                  : 'Access denied',
+		'not authorized to'              : 'Not authorized',
+		'not authorised to'              : 'Not authorized',
+		'password mismatch'              : 'Password mismatch',
+		'dronebl'                        : 'DroneBL',
+		'dnsbl'                          : 'DNSBL',
+		'g:lined'                        : 'G:Lined',
+		'z:lined'                        : 'Z:Lined',
+		'timeout'                        : 'Timeout',
+		'closing link'                   : 'Banned',
+		'banned'                         : 'Banned',
+		'client exited'                  : 'QUIT',
+		'quit'                           : 'QUIT'
+	}
 
 def backup(name):
 	try:
@@ -106,7 +106,8 @@ def ssl_ctx():
 class probe:
 	def __init__(self, semaphore, server, port, family=2):
 		self.server    = server
-		self.port      = port
+		self.port      = 6697
+		self.oport     = port
 		self.display   = server.ljust(18)+' \033[30m|\033[0m unknown network           \033[30m|\033[0m '
 		self.semaphore = semaphore
 		self.nickname  = None
@@ -122,15 +123,40 @@ class probe:
 	async def run(self):
 		async with self.semaphore:
 			try:
-				await self.connect()
+				await self.connect() # 6697
 			except Exception as ex:
 				if settings.errors_conn:
-					error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect using SSL/TLS', ex)
-				try:
-					await self.connect(True)
-				except Exception as ex:
-					if settings.errors_conn:
-						error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect', ex)
+					error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect using SSL/TLS on port ' + str(self.port), ex)
+				if self.oport not in (6667,6697):
+					self.port = self.oport
+					await asyncio.sleep(throttle.connect)
+					try:
+						await self.connect() # Non-standard
+					except Exception as ex:
+						if settings.errors_conn:
+							error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect using SSL/TLS on port ' + str(self.port), ex)
+						self.port = 6667
+						await asyncio.sleep(throttle.connect)
+						try:
+							await self.connect(True) # 6667
+						except Exception as ex:
+							if settings.errors_conn:
+								error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect on port ' + str(self.port), ex)
+							self.port = self.oport
+							await asyncio.sleep(throttle.connect)
+							try:
+								await self.connect(True) # Non-standard
+							except Exception as ex:
+								if settings.errors_conn:
+									error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect on port ' + str(self.port), ex)
+				else:
+					self.port = 6667
+					await asyncio.sleep(throttle.connect)
+					try:
+						await self.connect(True) # 6667
+					except Exception as ex:
+						if settings.errors_conn:
+							error(self.display + '\033[1;31mdisconnected\033[0m - failed to connect on port ' + str(self.port), ex)
 
 	async def raw(self, data):
 		self.writer.write(data[:510].encode('utf-8') + b'\r\n')
@@ -139,7 +165,7 @@ class probe:
 	async def connect(self, fallback=False):
 		options = {
 			'host'       : self.server,
-			'port'       : 6667 if fallback else 6697,
+			'port'       : self.port,
 			'limit'      : 1024,
 			'ssl'        : None if fallback else ssl_ctx(),
 			'family'     : self.family,
@@ -152,7 +178,7 @@ class probe:
 		}
 		self.nickname = identity['nick']
 		self.reader, self.writer = await asyncio.wait_for(asyncio.open_connection(**options), throttle.timeout)
-		self.snapshot['port'] = option['ports']
+		self.snapshot['port'] = option['port']
 		del options
 		if not fallback:
 			self.snapshot['ssl'] = True
@@ -267,17 +293,17 @@ class probe:
 					self.snapshot['RAW'] = self.snapshot['RAW']+[line,] if 'RAW' in self.snapshot else [line,]
 				else:
 					self.snapshot[event] = self.snapshot[event]+[line,] if event in self.snapshot else [line,]
-				if event in badchan and len(args) >= 4:
+				if event in bad.chan and len(args) >= 4:
 					chan = args[3]
 					if chan in self.channels['users']:
 						del self.channels['users'][chan]
-					error(f'{self.display}\033[31merror\033[0m - {chan}', badchan[event])
+					error(f'{self.display}\033[31merror\033[0m - {chan}', bad.chan[event])
 				elif line.startswith('ERROR :'):
-					check = [check for check in badserver if check in line.lower()]
+					check = [check for check in bad.error if check in line.lower()]
 					if check:
 						if check[0] in ('dronebl','dnsbl'):
 							self.snapshot['proxy'] = True
-						raise Exception(badserver[check[0]])
+						raise Exception(bad.error[check[0]])
 				elif args[0] == 'PING':
 					await self.raw('PONG ' + args[1][1:])
 				elif event == '001': #RPL_WELCOME
@@ -350,11 +376,11 @@ class probe:
 							self.jthrottle = throttle.seconds if seconds > throttle.seconds else seconds
 					error(self.display + '\033[31merror\033[0m - delay found', msg)
 				elif event == '465': # ERR_YOUREBANNEDCREEP
-					check = [check for check in badserver if check in line.lower()]
+					check = [check for check in bad.error if check in line.lower()]
 					if check:
 						if check[0] in ('dronebl','dnsbl'):
 							self.snapshot['proxy'] = True
-						raise Exception(badserver[check[0]])
+						raise Exception(bad.error[check[0]])
 				elif event == '464': # ERR_PASSWDMISMATCH
 					raise Exception('Network has a password')
 				elif event == '487': # ERR_MSGSERVICES
@@ -418,7 +444,10 @@ async def main(targets):
 	jobs = list()
 	for target in targets:
 		server = ':'.join(target.split(':')[-1:])
-		port   = ':'.join(target.split(':')[:-1])
+		if ':' not in target: # TODO: IPv6 addresses without a port wont get :6667 appeneded to it like this
+			port = 6697
+		else:
+			port  = int(':'.join(target.split(':')[:-1]))
 		try:
 			ipaddress.IPv4Address(server)
 			jobs.append(asyncio.ensure_future(probe(sema, server, port, 2).run()))
@@ -427,7 +456,7 @@ async def main(targets):
 				ipaddress.IPv6Address(server)
 				jobs.append(asyncio.ensure_future(probe(sema, server, port, 10).run()))
 			except:
-				error('failed to scan '+target, 'invalid ip address')
+				error('invalid ip address', server)
 	await asyncio.gather(*jobs)
 
 # Main
@@ -449,7 +478,7 @@ else:
 		os.mkdir('logs')
 	except FileExistsError:
 		pass
-	targets = [line.rstrip() for line in open(targets_file).readlines() if line and line not in donotscan]
+	targets = [line.rstrip() for line in open(targets_file).readlines() if line and line not in bad.donotscan]
 	found   = len(targets)
 	debug(f'loaded {found:,} targets')
 	if settings.daemon:
