@@ -118,7 +118,7 @@ class probe:
 		self.loops     = {'init':None, 'chan':None, 'nick':None, 'whois':None}
 		self.login     = {'pass': settings.ns_pass if settings.ns_pass else rndnick(), 'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))}
 		self.jthrottle = throttle.join
-		self.chanserv  = True
+		self.services  = {'chanserv':True, 'nickserv':True}
 		self.reader    = None
 		self.write     = None
 
@@ -198,7 +198,7 @@ class probe:
 	async def loop_initial(self):
 		try:
 			await asyncio.sleep(throttle.delay)
-			cmds = ['ADMIN', 'CAP LS', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'STATS p', 'VERSION']
+			cmds = ['ADMIN', 'CAP LS', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'SERVLIST', 'STATS p', 'VERSION']
 			random.shuffle(cmds)
 			cmds += ['PRIVMSG NickServ :REGISTER {0} {1}'.format(self.login['pass'], self.login['mail']), 'LIST']
 			for command in cmds:
@@ -225,7 +225,7 @@ class probe:
 				chan = random.choice(self.channels['all'])
 				self.channels['all'].remove(chan)
 				try:
-					if self.chanserv:
+					if self.services['chanserv']:
 						await self.sendmsg('ChanServ', 'INFO ' + chan)
 						await asyncio.sleep(1)
 					await self.raw('JOIN ' + chan)
@@ -260,6 +260,9 @@ class probe:
 					nick = random.choice(self.nicks['check'])
 					self.nicks['check'].remove(nick)
 					try:
+						if self.services['nickserv']:
+							await self.sendmsg('NickServ', 'INFO ' + nick)
+							await asyncio.sleep(1)
 						await self.raw('WHOIS ' + nick)
 					except:
 						break
@@ -365,7 +368,9 @@ class probe:
 				elif event == '401' and len(args) >= 4: # ERR_NOSUCHNICK
 					nick = args[3]
 					if nick == 'ChanServ':
-						self.chanserv = False
+						self.services['chanserv'] = False
+					if nick == 'NickServ':
+						self.services['nickserv'] = False
 				elif event == '421' and len(args) >= 3: # ERR_UNKNOWNCOMMAND
 					msg = ' '.join(args[2:])
 					if 'You must be connected for' in msg:
