@@ -376,8 +376,10 @@ class probe:
 					nick = args[3]
 					if nick == 'ChanServ':
 						self.services['chanserv'] = False
-					if nick == 'NickServ':
+					elif nick == 'NickServ':
 						self.services['nickserv'] = False
+					else:
+						await self.raw('WHOWAS ' + nick)
 				elif event == '421' and len(args) >= 3: # ERR_UNKNOWNCOMMAND
 					msg = ' '.join(args[2:])
 					if 'You must be connected for' in msg:
