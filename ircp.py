@@ -362,6 +362,13 @@ class probe:
 					debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[0m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
 					del self.channels['users'][chan]
 					await self.raw('WHO ' + chan)
+					await self.raw(f'MODE {chan} +b')
+					await asyncio.sleep(1)
+					await self.raw(f'MODE {chan} +e')
+					await asyncio.sleep(1)
+					await self.raw(f'MODE {chan} +I')
+					await asyncio.sleep(1)
+					await self.raw('WHO ' + chan)
 					await asyncio.sleep(throttle.part)
 					await self.raw('PART ' + chan)
 					self.channels['current'].remove(chan)
