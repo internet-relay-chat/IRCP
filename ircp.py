@@ -116,7 +116,9 @@ class probe:
 		self.channels  = {'all':list(), 'current':list(), 'users':dict()}
 		self.nicks     = {'all':list(), 'check':list()}
 		self.loops     = {'init':None, 'chan':None, 'nick':None, 'whois':None}
+		self.login     = {'pass': settings.ns_pass if settings.ns_pass else rndnick(), 'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))}
 		self.jthrottle = throttle.join
+		self.chanserv  = True
 		self.reader    = None
 		self.write     = None
 
@@ -196,13 +198,9 @@ class probe:
 	async def loop_initial(self):
 		try:
 			await asyncio.sleep(throttle.delay)
-			login = {
-				'pass': settings.ns_pass if settings.ns_pass else rndnick(),
-				'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))
-			}
 			cmds = ['ADMIN', 'CAP LS', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'STATS p', 'VERSION']
 			random.shuffle(cmds)
-			cmds += ['PRIVMSG NickServ :REGISTER {0} {1}'.format(login['pass'], login['mail']), 'LIST']
+			cmds += ['PRIVMSG NickServ :REGISTER {0} {1}'.format(self.login['pass'], self.login['mail']), 'LIST']
 			for command in cmds:
 				try:
 					await self.raw(command)
@@ -210,7 +208,6 @@ class probe:
 					break
 				else:
 					await asyncio.sleep(1.5)
-			del login
 			if not self.channels['all']:
 				error(self.display + '\033[31merror\033[0m - no channels found')
 				await self.raw('QUIT')
@@ -228,6 +225,9 @@ class probe:
 				chan = random.choice(self.channels['all'])
 				self.channels['all'].remove(chan)
 				try:
+					if self.chanserv:
+						await self.sendmsg('ChanServ', 'INFO ' + chan)
+						await asyncio.sleep(1)
 					await self.raw('JOIN ' + chan)
 				except:
 					break
@@ -306,6 +306,12 @@ class probe:
 						raise Exception(bad.error[check[0]])
 				elif args[0] == 'PING':
 					await self.raw('PONG ' + args[1][1:])
+				elif event == 'MODE' and len(args) == 4:
+					nick = args[2]
+					if nick == self.nickanme:
+						mode = args[3][1:]
+						if mode == '+r':
+							self.snapshot['registered'] = self.login
 				elif event == '001': #RPL_WELCOME
 					host = args[0][1:]
 					self.snapshot['server'] = self.server
@@ -356,6 +362,10 @@ class probe:
 					await asyncio.sleep(throttle.part)
 					await self.raw('PART ' + chan)
 					self.channels['current'].remove(chan)
+				elif event == '401' and len(args) >= 4: # ERR_NOSUCHNICK
+					nick = args[3]
+					if nick == 'ChanServ':
+						self.chanserv = False
 				elif event == '421' and len(args) >= 3: # ERR_UNKNOWNCOMMAND
 					msg = ' '.join(args[2:])
 					if 'You must be connected for' in msg:
@@ -385,11 +395,7 @@ class probe:
 					raise Exception('Network has a password')
 				elif event == '487': # ERR_MSGSERVICES
 					if '"/msg NickServ" is no longer supported' in line:
-						login = {
-							'pass': settings.ns_pass if settings.ns_pass else rndnick(),
-							'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))
-						}
-						await self.raw('/NickServ REGISTER {0} {1}'.format(login['pass'], login['mail']))
+						await self.raw('/NickServ REGISTER {0} {1}'.format(self.login['pass'], self.login['mail']))
 				elif event == 'KILL':
 					nick = args[2]
 					if nick == self.nickname:
@@ -420,11 +426,11 @@ class probe:
 						elif ('You are connected' in data or 'Connected securely via' in data) and ('SSL' in data or 'TLS' in data):
 							cipher = data.split()[-1:][0].replace('\'','').replace('"','')
 							self.snapshot['ssl_cipher'] = cipher
-						elif nick == 'NickServ':
+						elif nick in ('ChanServ','NickServ'):
 							self.snapshot['services'] = True
 							if 'is now registered' in msg or f'Nickname {self.nickname} registered' in msg:
 								debug(self.display + '\033[35mNickServ\033[0m registered')
-								self.snapshot['registered'] = True
+								self.snapshot['registered'] = self.login
 						elif '!' not in args[0]:
 							if 'dronebl.org/lookup' in msg:
 								self.snapshot['proxy'] = True

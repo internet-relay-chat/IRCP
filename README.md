@@ -51,12 +51,10 @@ Mass scanning *default* ports of services is nothing new & though port 6667 is n
 * Checking for IPv6 availability *(SSL= in 005 responses may help verify IPv6)*
 * Support for IRC servers using old versions of SSL
 * Create a seperate log for failed connections
-* Ability to link multiple IRCP instances running in daemon mode together for balancing
 * Remote syncing the logs to another server
 * Give props to [bwall](https://github.com/bwall) for giving me the idea with his [ircsnapshot](https://github.com/bwall/ircsnapshot) repository
 * Confirm nick registered *(most likely through MODE +r)* *(Log nick & password)*
 * Support for hostnames in targets list *(Attempt IPv6 & fallback to IPv4)*
-* Detect ChanServ in channels and do `PRUVMSG NICKSERV :INFO #<CHANNEL>`
 
 ## Opt-out
 The IRC networks we scanned are PUBLIC networks...any person can freely connect & parse the same information. Send your hate mail to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)
