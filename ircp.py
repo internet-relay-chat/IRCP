@@ -314,6 +314,12 @@ class probe:
 						raise Exception(bad.error[check[0]])
 				elif args[0] == 'PING':
 					await self.raw('PONG ' + args[1][1:])
+				elif event == 'KICK' and len(args) >= 4:
+					chan   = args[2]
+					kicked = args[3]
+					if kicked == self.nickname:
+						if chan in self.channels['current']:
+							self.channels['current'].remove(chan)
 				elif event == 'MODE' and len(args) == 4:
 					nick = args[2]
 					if nick == self.nickanme:
