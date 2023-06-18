@@ -403,7 +403,7 @@ class probe:
 						seconds = args[10]
 						if seconds.isdigit():
 							self.jthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
-					error(self.display + '\033[31merror\033[0m - delay found', msg)
+					error(self.display + '\033[31merror\033[0m - delay found for ' + target, msg)
 				elif event == '465' and len(args) >= 5: # ERR_YOUREBANNEDCREEP
 					check = [check for check in bad.error if check in line.lower()]
 					if check:
