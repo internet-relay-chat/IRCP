@@ -346,7 +346,7 @@ class probe:
 						self.channels['users'][chan] = users
 				elif event == '323': # RPL_LISTEND
 					if self.channels['all']:
-						del self.loops['init']
+						del self.loops['init'] # TODO: do we need to cancle this first?
 						debug(self.display + '\033[36mLIST\033[0m found \033[93m{0}\033[0m channel(s)'.format(str(len(self.channels['all']))))
 						self.loops['chan']  = asyncio.create_task(self.loop_channels())
 						self.loops['nick']  = asyncio.create_task(self.loop_nick())
@@ -388,14 +388,16 @@ class probe:
 					self.nickanme = rndnick()
 					await self.raw('NICK ' + self.nickname)
 				elif event == '439' and len(args) >= 5: # ERR_TARGETTOOFAST
-					chan = args[3]
-					msg  = ' '.join(args[4:])[1:]
-					self.channels['all'].append(chan)
+					target = args[3]
+					msg    = ' '.join(args[4:])[1:]
+					if target[:1] in ('#','&'):
+						self.channels['all'].append(chan)
+					else:
+						self.nicks['check'].append(nick)
 					if 'Target change too fast' in msg and len(args) >= 11:
 						seconds = args[10]
 						if seconds.isdigit():
-							seconds = int(seconds)
-							self.jthrottle = throttle.seconds if seconds > throttle.seconds else seconds
+							self.jthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
 					error(self.display + '\033[31merror\033[0m - delay found', msg)
 				elif event == '465': # ERR_YOUREBANNEDCREEP
 					check = [check for check in bad.error if check in line.lower()]
