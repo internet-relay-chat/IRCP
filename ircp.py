@@ -393,20 +393,18 @@ class probe:
 				elif event == '433': # ERR_NICKINUSE
 					self.nickanme = rndnick()
 					await self.raw('NICK ' + self.nickname)
-				elif event == '439' and len(args) >= 5: # ERR_TARGETTOOFAST
-					target = args[3]
-					msg    = ' '.join(args[4:])[1:]
+				elif event == '439' and len(args) >= 11: # ERR_TARGETTOOFAST
+					target  = args[3]
+					msg     = ' '.join(args[4:])[1:]
+					seconds = args[10]
 					if target[:1] in ('#','&'):
 						self.channels['all'].append(target)
+						if seconds.isdigit():
+							self.jthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
 					else:
 						self.nicks['check'].append(target)
-					if 'Target change too fast' in msg and len(args) >= 11:
-						seconds = args[10]
 						if seconds.isdigit():
-							if target[:1] in ('#','&'):
-								self.jthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
-							else:
-								self.nthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
+							self.nthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
 					error(self.display + '\033[31merror\033[0m - delay found for ' + target, msg)
 				elif event == '465' and len(args) >= 5: # ERR_YOUREBANNEDCREEP
 					check = [check for check in bad.error if check in line.lower()]
