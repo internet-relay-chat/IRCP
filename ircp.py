@@ -105,20 +105,21 @@ def ssl_ctx():
 
 class probe:
 	def __init__(self, semaphore, server, port, family=2):
+		self.semaphore = semaphore
 		self.server    = server
 		self.port      = 6697
 		self.oport     = port
+		self.family    = family
 		self.display   = server.ljust(18)+' \033[30m|\033[0m unknown network           \033[30m|\033[0m '
-		self.semaphore = semaphore
 		self.nickname  = None
-		self.snapshot  = dict()
 		self.multi     = ''
+		self.snapshot  = dict()
 		self.channels  = {'all':list(), 'current':list(), 'users':dict()}
 		self.nicks     = {'all':list(), 'check':list()}
 		self.loops     = {'init':None, 'chan':None, 'nick':None, 'whois':None}
 		self.login     = {'pass': settings.ns_pass if settings.ns_pass else rndnick(), 'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))}
-		self.jthrottle = throttle.join
 		self.services  = {'chanserv':True, 'nickserv':True}
+		self.jthrottle = throttle.join
 		self.reader    = None
 		self.write     = None
 
