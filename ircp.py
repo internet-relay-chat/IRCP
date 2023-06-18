@@ -2,7 +2,6 @@
 # internet relay chat probe for https://internetrelaychat.org/ - developed by acidvegas in python (https://git.acid.vegas/ircp)
 
 import asyncio
-import copy
 import json
 import os
 import random
