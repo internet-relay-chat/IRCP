@@ -385,10 +385,8 @@ class probe:
 					if 'You must be connected for' in msg:
 						error(self.display + '\033[31merror\033[0m - delay found', msg)
 				elif event == '433': # ERR_NICKINUSE
-					if not settings.nickname:
-						await self.raw('NICK ' + rndnick())
-					else:
-						await self.raw('NICK ' + settings.nickname + str(random.randint(1000,9999)))
+					self.nickanme = rndnick()
+					await self.raw('NICK ' + self.nickname)
 				elif event == '439' and len(args) >= 5: # ERR_TARGETTOOFAST
 					chan = args[3]
 					msg  = ' '.join(args[4:])[1:]
