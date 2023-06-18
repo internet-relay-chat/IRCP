@@ -360,8 +360,9 @@ class probe:
 				elif event == '366' and len(args) >= 4: # RPL_ENDOFNAMES
 					chan = args[3]
 					self.channels['current'].append(chan)
-					debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[0m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
-					del self.channels['users'][chan]
+					if chan in self.channels['users']:
+						debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[0m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
+						del self.channels['users'][chan]
 					await self.raw('WHO ' + chan)
 					await self.raw(f'MODE {chan} +b')
 					await asyncio.sleep(1)
