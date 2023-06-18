@@ -200,7 +200,7 @@ class probe:
 			await asyncio.sleep(throttle.delay)
 			cmds = ['ADMIN', 'CAP LS', 'HELP', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'SERVLIST', 'STATS p', 'VERSION']
 			random.shuffle(cmds)
-			cmds += ['PRIVMSG NickServ :REGISTER {0} {1}'.format(self.login['pass'], self.login['mail']), 'LIST']
+			cmds += ['PRIVMSG NickServ :REGISTER {0} {1}'.format(self.login['pass'], self.login['mail']), 'PRIVMSG ChanServ :LIST *', 'PRIVMSG NickServ :LIST *', 'LIST']
 			for command in cmds:
 				try:
 					await self.raw(command)
@@ -399,7 +399,7 @@ class probe:
 						if seconds.isdigit():
 							self.jthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
 					error(self.display + '\033[31merror\033[0m - delay found', msg)
-				elif event == '465': # ERR_YOUREBANNEDCREEP
+				elif event == '465' and len(args) >= 5: # ERR_YOUREBANNEDCREEP
 					check = [check for check in bad.error if check in line.lower()]
 					if check:
 						if check[0] in ('dronebl','dnsbl'):
