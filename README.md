@@ -50,10 +50,6 @@ Mass scanning *default* ports of services is nothing new & though port 6667 is n
 * Built in identd
 * Checking for IPv6 availability *(SSL= in 005 responses may help verify IPv6)*
 * Support for IRC servers using old versions of SSL
-* Create a seperate log for failed connections
-* Remote syncing the logs to another server
-* Give props to [bwall](https://github.com/bwall) for giving me the idea with his [ircsnapshot](https://github.com/bwall/ircsnapshot) repository
-* Confirm nick registered *(most likely through MODE +r)* *(Log nick & password)*
 * Support for hostnames in targets list *(Attempt IPv6 & fallback to IPv4)*
 
 ## Opt-out
