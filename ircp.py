@@ -391,9 +391,9 @@ class probe:
 					target = args[3]
 					msg    = ' '.join(args[4:])[1:]
 					if target[:1] in ('#','&'):
-						self.channels['all'].append(chan)
+						self.channels['all'].append(target)
 					else:
-						self.nicks['check'].append(nick)
+						self.nicks['check'].append(target)
 					if 'Target change too fast' in msg and len(args) >= 11:
 						seconds = args[10]
 						if seconds.isdigit():
