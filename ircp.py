@@ -123,6 +123,9 @@ class probe:
 		self.reader    = None
 		self.write     = None
 
+	async def sendmsg(self, target, msg):
+		await self.raw(f'PRIVMSG {target} :{msg}')
+
 	async def run(self):
 		async with self.semaphore:
 			try:
