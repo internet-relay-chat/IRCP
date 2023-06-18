@@ -32,7 +32,7 @@ Everything is done in a *carefully* throttled manner for stealth to avoid detect
 ![](.screens/preview.png)
 
 ## Threat Scope
-While IRC is an generally unfavored chat protocol as of 2023 *(roughly 7,000 networks)*, it still has a beating heart **(over 300,000 users & channels)* with potential for user growth & active development being done on [IRCv3](https://ircv3.net/) protocol implementations.
+While IRC is an generally unfavored chat protocol as of 2023 *(roughly 7,000 networks)*, it still has a beating heart *(over 300,000 users & channels)* with potential for user growth & active development being done on [IRCv3](https://ircv3.net/) protocol implementations.
 
 Point is..it's is not going anywhere. With that being said, every network being on the same port leads way for a lot of potential threats:
 
