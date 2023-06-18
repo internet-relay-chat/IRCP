@@ -29,7 +29,7 @@ class throttle:
 	join     = 10  if not settings.daemon else 30  # Delay between channel JOINs
 	nick     = 300 if not settings.daemon else 600 # Delay between every random NICK change
 	part     = 10  if not settings.daemon else 30  # Delay before PARTing a channel
-	seconds  = 300 if not settings.daemon else 600 # Maximum seconds to wait when throttled for JOIN
+	seconds  = 300 if not settings.daemon else 600 # Maximum seconds to wait when throttled for JOIN or WHOIS
 	threads  = 100 if not settings.daemon else 25  # Maximum number of threads running
 	timeout  = 30  if not settings.daemon else 60  # Timeout for all sockets
 	whois    = 5   if not settings.daemon else 15  # Delay between WHOIS requests
@@ -120,6 +120,7 @@ class probe:
 		self.login     = {'pass': settings.ns_pass if settings.ns_pass else rndnick(), 'mail': settings.ns_mail if settings.ns_mail else f'{rndnick()}@{rndnick()}.'+random.choice(('com','net','org'))}
 		self.services  = {'chanserv':True, 'nickserv':True}
 		self.jthrottle = throttle.join
+		self.nthrottle = throttle.whois
 		self.reader    = None
 		self.write     = None
 
@@ -402,7 +403,10 @@ class probe:
 					if 'Target change too fast' in msg and len(args) >= 11:
 						seconds = args[10]
 						if seconds.isdigit():
-							self.jthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
+							if target[:1] in ('#','&'):
+								self.jthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
+							else:
+								self.nthrottle = throttle.seconds if int(seconds) > throttle.seconds else int(seconds)
 					error(self.display + '\033[31merror\033[0m - delay found for ' + target, msg)
 				elif event == '465' and len(args) >= 5: # ERR_YOUREBANNEDCREEP
 					check = [check for check in bad.error if check in line.lower()]
