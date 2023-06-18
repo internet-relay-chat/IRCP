@@ -198,7 +198,7 @@ class probe:
 	async def loop_initial(self):
 		try:
 			await asyncio.sleep(throttle.delay)
-			cmds = ['ADMIN', 'CAP LS', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'SERVLIST', 'STATS p', 'VERSION']
+			cmds = ['ADMIN', 'CAP LS', 'HELP', 'INFO', 'IRCOPS', 'LINKS', 'MAP', 'MODULES -all', 'SERVLIST', 'STATS p', 'VERSION']
 			random.shuffle(cmds)
 			cmds += ['PRIVMSG NickServ :REGISTER {0} {1}'.format(self.login['pass'], self.login['mail']), 'LIST']
 			for command in cmds:
