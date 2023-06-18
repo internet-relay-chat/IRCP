@@ -295,7 +295,7 @@ class probe:
 					self.snapshot['ERROR'] = self.snapshot['ERROR']+[line,] if 'ERROR' in self.snapshot else [line,]
 				elif not event.isdigit() and event not in ('CAP','INVITE','JOIN','KICK','KILL','MODE','NICK','NOTICE','PART','PRIVMSG','QUIT','TOPIC','WHO'):
 					self.snapshot['RAW'] = self.snapshot['RAW']+[line,] if 'RAW' in self.snapshot else [line,]
-				else:
+				elif event != '401':
 					self.snapshot[event] = self.snapshot[event]+[line,] if event in self.snapshot else [line,]
 				if event in bad.chan and len(args) >= 4:
 					chan = args[3]
