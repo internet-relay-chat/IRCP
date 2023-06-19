@@ -240,7 +240,6 @@ class probe:
 			while self.nicks['check']:
 				await asyncio.sleep(1)
 			self.loops['whois'].cancel()
-			del self.loops['whois']
 			await self.raw('QUIT')
 		except asyncio.CancelledError:
 			pass
@@ -357,7 +356,6 @@ class probe:
 						self.channels['users'][chan] = users
 				elif event == '323': # RPL_LISTEND
 					if self.channels['all']:
-						del self.loops['init'] # TODO: do we need to cancle this first?
 						debug(self.display + '\033[36mLIST\033[0m found \033[93m{0}\033[0m channel(s)'.format(str(len(self.channels['all']))))
 						self.loops['chan']  = asyncio.create_task(self.loop_channels())
 						self.loops['nick']  = asyncio.create_task(self.loop_nick())
