@@ -524,8 +524,7 @@ else:
 	del found, targets_file
 	while True:
 		random.shuffle(targets)
-		loop = asyncio.get_event_loop()
-		loop.run_until_complete(main(targets))
+		asyncio.run(main(targets))
 		debug('IRCP has finished probing!')
 		if settings.daemon:
 			backup(time.strftime('%y%m%d-%H%M%S'))
