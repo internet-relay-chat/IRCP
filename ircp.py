@@ -264,10 +264,18 @@ class probe:
 					nick = random.choice(self.nicks['check'])
 					self.nicks['check'].remove(nick)
 					try:
+						await self.raw('WHOIS ' + nick)
+						await asyncio.sleep(1)
 						if self.services['nickserv']:
 							await self.sendmsg('NickServ', 'INFO ' + nick)
 							await asyncio.sleep(1)
-						await self.raw('WHOIS ' + nick)
+						await self.raw(f'NOTICE {chan} \001VERSION\001') # TODO: check the database if we already have this information to speed things up
+						await asyncio.sleep(1)
+						await self.raw(f'NOTICE {chan} \001TIME\001')
+						await asyncio.sleep(1)
+						await self.raw(f'NOTICE {chan} \001CLIENTINFO\001')
+						await asyncio.sleep(1)
+						await self.raw(f'NOTICE {chan} \001SOURCE\001')
 					except:
 						break
 					else:
@@ -279,6 +287,13 @@ class probe:
 			pass
 		except Exception as ex:
 			error(self.display + '\033[31merror\033[0m - loop_whois', ex)
+
+	async def db(self, event, data):
+		if event in self.snapshot:
+			if data not in self.snapshot[event]:
+				self.snapshot[event].append(data)
+		else:
+			self.snapshot[event] = [data,]
 
 	async def listen(self):
 		while True:
@@ -295,11 +310,11 @@ class probe:
 					self.snapshot = dict()
 					self.multi = '.1' if not self.multi else '.' + str(int(self.multi[1:])+1)
 				if args[0].upper() == 'ERROR':
-					self.snapshot['ERROR'] = self.snapshot['ERROR']+[line,] if 'ERROR' in self.snapshot else [line,]
+					await self.db('ERROR', line)
 				elif not event.isdigit() and event not in ('CAP','INVITE','JOIN','KICK','KILL','MODE','NICK','NOTICE','PART','PRIVMSG','QUIT','TOPIC','WHO'):
-					self.snapshot['RAW'] = self.snapshot['RAW']+[line,] if 'RAW' in self.snapshot else [line,]
+					await self.db('RAW', line)
 				elif event != '401':
-					self.snapshot[event] = self.snapshot[event]+[line,] if event in self.snapshot else [line,]
+					await self.db(event, line)
 				if event in bad.chan and len(args) >= 4:
 					chan = args[3]
 					if chan in self.channels['users']:
@@ -378,6 +393,14 @@ class probe:
 					await asyncio.sleep(1)
 					await self.raw(f'MODE {chan} +I')
 					await asyncio.sleep(1)
+					await self.raw(f'NOTICE {chan} \001VERSION\001')
+					await asyncio.sleep(1)
+					await self.raw(f'NOTICE {chan} \001TIME\001')
+					await asyncio.sleep(1)
+					await self.raw(f'NOTICE {chan} \001CLIENTINFO\001')
+					await asyncio.sleep(1)
+					await self.raw(f'NOTICE {chan} \001SOURCE\001')
+					await asyncio.sleep(1)
 					await self.raw('WHO ' + chan)
 					await asyncio.sleep(throttle.part)
 					await self.raw('PART ' + chan)
@@ -425,9 +448,6 @@ class probe:
 					nick = args[2]
 					if nick == self.nickname:
 						raise Exception('KILL')
-					else:
-						if 'KILL' in self.snapshot:
-							del self.snapshot['KILL']
 				elif event in ('NOTICE','PRIVMSG') and len(args) >= 4:
 					nick   = args[0].split('!')[1:]
 					target = args[2]
