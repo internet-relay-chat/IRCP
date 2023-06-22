@@ -20,9 +20,9 @@ Edit [ircp.py](https://github.com/internet-relay-chat/IRCP/blob/master/ircp.py) 
 ## Order of Operations
 First, an attempt to connect using SSL/TLS is made, which will fall back to a standard connection if it fails. If a non-standard port was given, both standard & secure connection attempts are made on the port as-well. The **RPL_ISUPPORT** *(005)* response is checked for the `SSL=` option to try & locate secure ports.
 
-Once connected, server information is gathered from `ADMIN`, `CAP LS`, `MODULES -all`, `VERSION`, `IRCOPS`, `MAP`, `INFO`, `LINKS`, `SERVLIST`, `STATS p`, & `LIST` replies. An attempt to register a nickname is then made by trying to contact NickServ.
+Once connected, server information is gathered from `ADMIN`, `CAP LS`, `COMMANDS`, `HELP`, `MODULES -all`, `VERSION`, `IRCOPS`, `MAP`, `INFO`, `LINKS`, `SERVLIST`, `STATS p`, & `LIST` replies. An attempt to register a nickname is then made by trying to contact NickServ.
 
-Lastly, every channel is joined with a `WHO` command sent & every new nick found gets a `WHOIS` sent. Registered channels & nicks are issued a NickServ/ChanServ `INFO` command.
+Lastly, every channel is joined with a `WHO` command sent & every new nick found gets a `WHOIS` sent. Registered channels & nicks are issued a NickServ/ChanServ `INFO` command. CTCP requests are sent to channels & nicks aswell.
 
 Once we have finishing scanning a server, the information found is saved to a JSON file. The data in the logs are stored in categories based on [numerics](https://raw.githubusercontent.com/internet-relay-chat/random/master/numerics.txt) *(001 is RPL_WELCOME, 322 is RPL_LIST, etc)* & events *(JOIN, MODE, KILL, etc)*.
 
