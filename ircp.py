@@ -33,7 +33,7 @@ class throttle:
 	threads  = 100 if not settings.daemon else 25  # Maximum number of threads running
 	timeout  = 30  if not settings.daemon else 60  # Timeout for all sockets
 	whois    = 5   if not settings.daemon else 15  # Delay between WHOIS requests
-	ztimeout = 200 if not settings.daemon else 300 # Timeout for zero data from server
+	ztimeout = 300 if not settings.daemon else 600 # Timeout for zero data from server
 
 class bad:
 	donotscan = (
