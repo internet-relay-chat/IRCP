@@ -24,6 +24,7 @@ class settings:
 
 class throttle:
 	channels = 3   if not settings.daemon else 2   # Maximum number of channels to scan at once
+	commands = 1.5 if not settings.daemon else 3   # Delay bewteen multiple commands send to the same target
 	connect  = 15  if not settings.daemon else 60  # Delay between each connection attempt on a diffferent port
 	delay    = 300 if not settings.daemon else 600 # Delay before registering nick (if enabled) & sending /LIST
 	join     = 10  if not settings.daemon else 30  # Delay between channel JOINs
@@ -85,11 +86,11 @@ def backup(name):
 		error('\033[1;31mBACKUP FAILED\033[0m', ex)
 
 def debug(data):
-	print('{0} \033[30m|\033[0m [\033[35m~\033[0m] {1}'.format(time.strftime('%I:%M:%S'), data))
+	print('{0} \033[1;30m|\033[0m [\033[35m~\033[0m] {1}'.format(time.strftime('%I:%M:%S'), data))
 
 def error(data, reason=None):
 	if settings.errors:
-		print('{0} \033[30m|\033[0m [\033[31m!\033[0m] {1} \033[30m({2})\033[0m'.format(time.strftime('%I:%M:%S'), data, str(reason))) if reason else print('{0} \033[30m|\033[0m [\033[31m!\033[0m] {1}'.format(time.strftime('%I:%M:%S'), data))
+		print('{0} \033[1;30m|\033[0m [\033[31m!\033[0m] {1} \033[1;30m({2})\033[0m'.format(time.strftime('%I:%M:%S'), data, str(reason))) if reason else print('{0} \033[1;30m|\033[0m [\033[31m!\033[0m] {1}'.format(time.strftime('%I:%M:%S'), data))
 
 def rndnick():
 	prefix = random.choice(['st','sn','cr','pl','pr','fr','fl','qu','br','gr','sh','sk','tr','kl','wr','bl']+list('bcdfgklmnprstvwz'))
@@ -110,7 +111,7 @@ class probe:
 		self.port      = 6697
 		self.oport     = port
 		self.family    = family
-		self.display   = server.ljust(18)+' \033[30m|\033[0m unknown network           \033[30m|\033[0m '
+		self.display   = server.ljust(18)+' \033[1;30m|\033[0m unknown network           \033[1;30m|\033[0m '
 		self.nickname  = None
 		self.multi     = ''
 		self.snapshot  = dict()
@@ -185,7 +186,7 @@ class probe:
 		}
 		self.nickname = identity['nick']
 		self.reader, self.writer = await asyncio.wait_for(asyncio.open_connection(**options), throttle.timeout)
-		self.snapshot['port'] = option['port']
+		self.snapshot['port'] = options['port']
 		del options
 		if not fallback:
 			self.snapshot['ssl'] = True
@@ -212,7 +213,7 @@ class probe:
 				except:
 					break
 				else:
-					await asyncio.sleep(1.5)
+					await asyncio.sleep(throttle.commands)
 			if not self.channels['all']:
 				error(self.display + '\033[31merror\033[0m - no channels found')
 				await self.raw('QUIT')
@@ -232,7 +233,7 @@ class probe:
 				try:
 					if self.services['chanserv']:
 						await self.sendmsg('ChanServ', 'INFO ' + chan)
-						await asyncio.sleep(1)
+						await asyncio.sleep(throttle.commands)
 					await self.raw('JOIN ' + chan)
 				except:
 					break
@@ -252,6 +253,7 @@ class probe:
 				await asyncio.sleep(throttle.nick)
 				self.nickname = rndnick()
 				await self.raw('NICK ' + self.nickname)
+				debug(self.display + '\033[0;35mNICK\033[0m - new identity')
 		except asyncio.CancelledError:
 			pass
 		except Exception as ex:
@@ -265,17 +267,17 @@ class probe:
 					self.nicks['check'].remove(nick)
 					try:
 						await self.raw('WHOIS ' + nick)
-						await asyncio.sleep(1)
+						await asyncio.sleep(throttle.commands)
 						if self.services['nickserv']:
 							await self.sendmsg('NickServ', 'INFO ' + nick)
-							await asyncio.sleep(1)
-						await self.raw(f'NOTICE {chan} \001VERSION\001') # TODO: check the database if we already have this information to speed things up
-						await asyncio.sleep(1)
-						await self.raw(f'NOTICE {chan} \001TIME\001')
-						await asyncio.sleep(1)
-						await self.raw(f'NOTICE {chan} \001CLIENTINFO\001')
-						await asyncio.sleep(1)
-						await self.raw(f'NOTICE {chan} \001SOURCE\001')
+							await asyncio.sleep(throttle.commands)
+						await self.raw(f'NOTICE {nick} \001VERSION\001') # TODO: check the database if we already have this information to speed things up
+						await asyncio.sleep(throttle.commands)
+						await self.raw(f'NOTICE {nick} \001TIME\001')
+						await asyncio.sleep(throttle.commands)
+						await self.raw(f'NOTICE {nick} \001CLIENTINFO\001')
+						await asyncio.sleep(throttle.commands)
+						await self.raw(f'NOTICE {nick} \001SOURCE\001')
 					except:
 						break
 					else:
@@ -336,7 +338,7 @@ class probe:
 							self.channels['current'].remove(chan)
 				elif event == 'MODE' and len(args) == 4:
 					nick = args[2]
-					if nick == self.nickanme:
+					if nick == self.nickname:
 						mode = args[3][1:]
 						if mode == '+r':
 							self.snapshot['registered'] = self.login
@@ -345,10 +347,10 @@ class probe:
 					self.snapshot['server'] = self.server
 					self.snapshot['host']   = host
 					if len(host) > 25:
-						self.display = f'{self.server.ljust(18)} \033[30m|\033[0m {host[:22]}... \033[30m|\033[0m '
+						self.display = f'{self.server.ljust(18)} \033[1;30m|\033[0m {host[:22]}... \033[1;30m|\033[0m '
 					else:
-						self.display = f'{self.server.ljust(18)} \033[30m|\033[0m {host.ljust(25)} \033[30m|\033[0m '
-					debug(self.display + f'\033[1;32mconnected\033[0m \033[30m(port {self.port})\033[0m')
+						self.display = f'{self.server.ljust(18)} \033[1;30m|\033[0m {host.ljust(25)} \033[1;30m|\033[0m '
+					debug(self.display + f'\033[1;32mconnected\033[0m \033[1;30m(port {self.port})\033[0m')
 					self.loops['init'] = asyncio.create_task(self.loop_initial())
 				elif event == '005':
 					for item in args:
@@ -363,6 +365,24 @@ class probe:
 						error(self.display + '\033[93mProxy Monitor detected\033[0m', nick)
 					else:
 						debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
+				elif event == 315 and len*args) >= 3: # RPL_ENDOFWHO
+					chan = args[3]
+					await self.raw(f'MODE {chan} +b')
+					await asyncio.sleep(throttle.commands)
+					await self.raw(f'MODE {chan} +e')
+					await asyncio.sleep(throttle.commands)
+					await self.raw(f'MODE {chan} +I')
+					await asyncio.sleep(throttle.commands)
+					await self.raw(f'NOTICE {chan} \001VERSION\001')
+					await asyncio.sleep(throttle.commands)
+					await self.raw(f'NOTICE {chan} \001TIME\001')
+					await asyncio.sleep(throttle.commands)
+					await self.raw(f'NOTICE {chan} \001CLIENTINFO\001')
+					await asyncio.sleep(throttle.commands)
+					await self.raw(f'NOTICE {chan} \001SOURCE\001')
+					await asyncio.sleep(throttle.part)
+					await self.raw('PART ' + chan)
+					self.channels['current'].remove(chan)
 				elif event == '322' and len(args) >= 4: # RPL_LIST
 					chan  = args[3]
 					users = args[4]
@@ -384,27 +404,9 @@ class probe:
 					chan = args[3]
 					self.channels['current'].append(chan)
 					if chan in self.channels['users']:
-						debug('{0}\033[32mJOIN\033[0m {1} \033[30m(found \033[93m{2}\033[0m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
+						debug('{0}\033[32mJOIN\033[0m {1} \033[1;30m(found \033[93m{2}\033[1;30m users)\033[0m'.format(self.display, chan, self.channels['users'][chan]))
 						del self.channels['users'][chan]
 					await self.raw('WHO ' + chan)
-					await self.raw(f'MODE {chan} +b')
-					await asyncio.sleep(1)
-					await self.raw(f'MODE {chan} +e')
-					await asyncio.sleep(1)
-					await self.raw(f'MODE {chan} +I')
-					await asyncio.sleep(1)
-					await self.raw(f'NOTICE {chan} \001VERSION\001')
-					await asyncio.sleep(1)
-					await self.raw(f'NOTICE {chan} \001TIME\001')
-					await asyncio.sleep(1)
-					await self.raw(f'NOTICE {chan} \001CLIENTINFO\001')
-					await asyncio.sleep(1)
-					await self.raw(f'NOTICE {chan} \001SOURCE\001')
-					await asyncio.sleep(1)
-					await self.raw('WHO ' + chan)
-					await asyncio.sleep(throttle.part)
-					await self.raw('PART ' + chan)
-					self.channels['current'].remove(chan)
 				elif event == '401' and len(args) >= 4: # ERR_NOSUCHNICK
 					nick = args[3]
 					if nick == 'ChanServ':
@@ -418,7 +420,7 @@ class probe:
 					if 'You must be connected for' in msg:
 						error(self.display + '\033[31merror\033[0m - delay found', msg)
 				elif event == '433': # ERR_NICKINUSE
-					self.nickanme = rndnick()
+					self.nickname = rndnick()
 					await self.raw('NICK ' + self.nickname)
 				elif event == '439' and len(args) >= 11: # ERR_TARGETTOOFAST
 					target  = args[3]
@@ -468,8 +470,8 @@ class probe:
 						if msg[:8] == '\001VERSION':
 							version = random.choice(('http://www.mibbit.com ajax IRC Client','mIRC v6.35 Khaled Mardam-Bey','xchat 0.24.1 Linux 2.6.27-8-eeepc i686','rZNC Version 1.0 [02/01/11] - Built from ZNC','thelounge v3.0.0 -- https://thelounge.chat/'))
 							await self.raw(f'NOTICE {nick} \001VERSION {version}\001')
-						elif ('You are connected' in data or 'Connected securely via' in data) and ('SSL' in data or 'TLS' in data):
-							cipher = data.split()[-1:][0].replace('\'','').replace('"','')
+						elif ('You are connected' in line or 'Connected securely via' in line) and ('SSL' in line or 'TLS' in line):
+							cipher = line.split()[-1:][0].replace('\'','').replace('"','')
 							self.snapshot['ssl_cipher'] = cipher
 						elif nick in ('ChanServ','NickServ'):
 							self.snapshot['services'] = True
