@@ -55,8 +55,7 @@ Mass scanning *default* ports of services is nothing new & though port 6667 is n
 ## Opt-out
 The IRC networks we scanned are PUBLIC networks...any person can freely connect & parse the same information. Send your hate mail to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)
 
-## Mirrors
-- [acid.vegas](https://git.acid.vegas/ircp)
-- [GitHub](https://github.com/acidvegas/ircp)
-- [GitLab](https://gitlab.com/acidvegas/ircp)
-- [SuperNETs](https://git.supernets.org/acidvegas/ircp)
+___
+
+###### Mirrors
+[acid.vegas](https://git.acid.vegas/IRCP) • [GitHub](https://github.com/internet-relay-chat/IRCP) • [GitLab](https://gitlab.com/internetrelaychat/IRCP) • [SourceHut](https://git.sr.ht/~acidvegas/IRCP) • [SuperNETs](https://git.supernets.org/internetrelaychat/IRCP)
