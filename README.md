@@ -51,10 +51,11 @@ Mass scanning *default* ports of services is nothing new & though port 6667 is n
 * Checking for IPv6 availability *(SSL= in 005 responses may help verify IPv6)*
 * Support for IRC servers using old versions of SSL
 * Support for hostnames in targets list *(Attempt IPv6 & fallback to IPv4)*
-* Fix CTCP *(More involved than just sending CTCP raw to the server to get a response)*
+* How do we handle the possibility of connecting to multiple servers linked to same network?
+* Seperate lists for failed & banned networks
 
 ## Opt-out
-The IRC networks we scanned are PUBLIC networks...any person can freely connect & parse the same information. Send your hate mail to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)
+You can request to opt out of our scans by sending an email to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)
 
 ___
 

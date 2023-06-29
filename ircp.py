@@ -10,31 +10,34 @@ import ssl
 import sys
 import time
 
+# Make sure you have enough RAM for logmax*threads
+# For example, 5000000 log_max (5MB) on 1000 threads could *potentially* use up to 5GB in RAM
+
 class settings:
 	daemon      = False                        # Run in daemon mode (24/7 throttled scanning)
 	errors      = True                         # Show errors in console
 	errors_conn = False                        # Show connection errors in console
-	log_max     = 5000000                      # Maximum log size (in bytes) before starting another
+	log_max     = 5000000 # 5mb                # Maximum log size (in bytes) before starting another
 	nickname    = 'IRCP'                       # None = random
 	username    = 'ircp'                       # None = random
 	realname    = 'scan@internetrelaychat.org' # None = random
 	ns_mail     = 'scan@internetrelaychat.org' # None = random@random.[com|net|org]
-	ns_pass     = 'changeme'                   # None = random
+	ns_pass     = None                         # None = random
 	vhost       = None                         # Bind to a specific IP address
 
 class throttle:
-	channels = 3   if not settings.daemon else 2   # Maximum number of channels to scan at once
-	commands = 1.5 if not settings.daemon else 3   # Delay bewteen multiple commands send to the same target
-	connect  = 15  if not settings.daemon else 60  # Delay between each connection attempt on a diffferent port
-	delay    = 300 if not settings.daemon else 600 # Delay before registering nick (if enabled) & sending /LIST
-	join     = 10  if not settings.daemon else 30  # Delay between channel JOINs
-	nick     = 300 if not settings.daemon else 600 # Delay between every random NICK change
-	part     = 10  if not settings.daemon else 30  # Delay before PARTing a channel
-	seconds  = 300 if not settings.daemon else 600 # Maximum seconds to wait when throttled for JOIN or WHOIS
-	threads  = 300 if not settings.daemon else 100 # Maximum number of threads running
-	timeout  = 30  if not settings.daemon else 60  # Timeout for all sockets
-	whois    = 15  if not settings.daemon else 30  # Delay between WHOIS requests
-	ztimeout = 600 if not settings.daemon else 900 # Timeout for zero data from server
+	channels = 5   if not settings.daemon else 3    # Maximum number of channels to scan at once
+	commands = 1.5 if not settings.daemon else 3    # Delay bewteen multiple commands send to the same target
+	connect  = 15  if not settings.daemon else 60   # Delay between each connection attempt on a diffferent port
+	delay    = 300 if not settings.daemon else 600  # Delay before registering nick (if enabled) & sending /LIST
+	join     = 10  if not settings.daemon else 30   # Delay between channel JOINs
+	nick     = 900 if not settings.daemon else 1200 # Delay between every random NICK change
+	part     = 10  if not settings.daemon else 30   # Delay before PARTing a channel
+	seconds  = 300 if not settings.daemon else 600  # Maximum seconds to wait when throttled for JOIN or WHOIS
+	threads  = 500 if not settings.daemon else 300  # Maximum number of threads running
+	timeout  = 30  if not settings.daemon else 60   # Timeout for all sockets
+	whois    = 15  if not settings.daemon else 30   # Delay between WHOIS requests
+	ztimeout = 600 if not settings.daemon else 900  # Timeout for zero data from server
 
 class bad:
 	donotscan = (
@@ -250,7 +253,7 @@ class probe:
 	async def loop_nick(self):
 		try:
 			while True:
-				await asyncio.sleep(throttle.nick)
+				await asyncio.sleep(throttle.nick+random.randint(60,90))
 				self.nickname = rndnick()
 				await self.raw('NICK ' + self.nickname)
 				debug(self.display + '\033[0;35mNICK\033[0m - new identity')
