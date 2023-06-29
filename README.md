@@ -51,8 +51,10 @@ Mass scanning *default* ports of services is nothing new & though port 6667 is n
 * Checking for IPv6 availability *(SSL= in 005 responses may help verify IPv6)*
 * Support for IRC servers using old versions of SSL
 * Support for hostnames in targets list *(Attempt IPv6 & fallback to IPv4)*
+* Support for multiple vhost
 * How do we handle the possibility of connecting to multiple servers linked to same network?
-* Seperate lists for failed & banned networks
+* Seperate lists for failed & banned networks.
+* Learn network target-change throttles from 439 **ERR_TARGETTOOFAST** replies *(Research IRCd defaults)*
 
 ## Opt-out
 You can request to opt out of our scans by sending an email to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)
