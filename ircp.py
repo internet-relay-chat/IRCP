@@ -31,10 +31,10 @@ class throttle:
 	nick     = 300 if not settings.daemon else 600 # Delay between every random NICK change
 	part     = 10  if not settings.daemon else 30  # Delay before PARTing a channel
 	seconds  = 300 if not settings.daemon else 600 # Maximum seconds to wait when throttled for JOIN or WHOIS
-	threads  = 100 if not settings.daemon else 25  # Maximum number of threads running
+	threads  = 300 if not settings.daemon else 100 # Maximum number of threads running
 	timeout  = 30  if not settings.daemon else 60  # Timeout for all sockets
-	whois    = 5   if not settings.daemon else 15  # Delay between WHOIS requests
-	ztimeout = 300 if not settings.daemon else 600 # Timeout for zero data from server
+	whois    = 15  if not settings.daemon else 30  # Delay between WHOIS requests
+	ztimeout = 600 if not settings.daemon else 900 # Timeout for zero data from server
 
 class bad:
 	donotscan = (
@@ -177,7 +177,7 @@ class probe:
 			'limit'      : 1024,
 			'ssl'        : None if fallback else ssl_ctx(),
 			'family'     : self.family,
-			'local_addr' : settings.vhost
+			'local_addr' : (settings.vhost, random.randint(5000,65000)) if settings.vhost else None
 		}
 		identity = {
 			'nick': settings.nickname if settings.nickname else rndnick(),
@@ -460,7 +460,7 @@ class probe:
 								self.snapshot['proxy'] = True
 								check = [x for x in ('bopm','hopm') if x in line]
 								if check:
-									error(f'{self.display}\033[93m{check.upper()} detected\033[0m')
+									error(f'{self.display}\033[93m{check[0].upper()} detected\033[0m')
 								else:
 									error(self.display + '\033[93mProxy Monitor detected\033[0m')
 						for i in ('You must have been using this nick for','You must be connected for','not connected long enough','Please wait', 'You cannot list within the first'):
