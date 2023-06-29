@@ -365,7 +365,7 @@ class probe:
 						error(self.display + '\033[93mProxy Monitor detected\033[0m', nick)
 					else:
 						debug(f'{self.display}\033[34mWHOIS\033[0m {nick}')
-				elif event == 315 and len*args) >= 3: # RPL_ENDOFWHO
+				elif event == 315 and len(args) >= 3: # RPL_ENDOFWHO
 					chan = args[3]
 					await self.raw(f'MODE {chan} +b')
 					await asyncio.sleep(throttle.commands)
