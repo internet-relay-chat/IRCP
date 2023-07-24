@@ -55,6 +55,7 @@ Mass scanning *default* ports of services is nothing new & though port 6667 is n
 * How do we handle the possibility of connecting to multiple servers linked to same network?
 * Seperate lists for failed & banned networks.
 * Learn network target-change throttles from 439 **ERR_TARGETTOOFAST** replies *(Research IRCd defaults)*
+* Store last command execute to detect triggers
 
 ## Opt-out
 You can request to opt out of our scans by sending an email to [scan@internetrelaychat.org](mailto://scan@internetrelaychat.org)

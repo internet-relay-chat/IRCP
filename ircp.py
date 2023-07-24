@@ -8,10 +8,8 @@ import os
 import random
 import ssl
 import sys
+import tarfile
 import time
-
-# Make sure you have enough RAM for logmax*threads
-# For example, 5000000 log_max (5MB) on 1000 threads could *potentially* use up to 5GB in RAM
 
 class settings:
 	daemon      = False                        # Run in daemon mode (24/7 throttled scanning)
@@ -244,6 +242,7 @@ class probe:
 			while self.nicks['check']:
 				await asyncio.sleep(1)
 			self.loops['whois'].cancel()
+			self.loops['nick'].cancel()
 			await self.raw('QUIT')
 		except asyncio.CancelledError:
 			pass
