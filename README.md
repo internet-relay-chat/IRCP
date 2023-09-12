@@ -63,4 +63,4 @@ You can request to opt out of our scans by sending an email to [scan@internetrel
 ___
 
 ###### Mirrors
-[acid.vegas](https://git.acid.vegas/IRCP) • [GitHub](https://github.com/internet-relay-chat/IRCP) • [GitLab](https://gitlab.com/internetrelaychat/IRCP) • [SourceHut](https://git.sr.ht/~acidvegas/IRCP) • [SuperNETs](https://git.supernets.org/internetrelaychat/IRCP)
+[acid.vegas](https://git.acid.vegas/IRCP) • [GitHub](https://github.com/internet-relay-chat/IRCP) • [GitLab](https://gitlab.com/internetrelaychat/IRCP) • [SuperNETs](https://git.supernets.org/internetrelaychat/IRCP)
